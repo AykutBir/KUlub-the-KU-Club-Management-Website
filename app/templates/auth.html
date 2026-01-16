@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Management Platform - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+    <div class="auth-layout">
+        <!-- Left Side - Image Space -->
+        <div class="image-section">
+            <div class="branding-container">
+                <h1 class="brand-name">KUlub</h1>
+                <p class="brand-motto">Your Campus. Your Clubs. Connected.</p>
+            </div>
+            <div class="image-container">
+                <div class="circular-animation">
+                    <div class="circle-ring circle-ring-1"></div>
+                    <div class="circle-ring circle-ring-2"></div>
+                    <div class="circle-ring circle-ring-3"></div>
+                </div>
+                <img src="{{ url_for('static', filename='images/Sign-In.png') }}" alt="Sign In" id="loginImage" class="auth-image active">
+                <img src="{{ url_for('static', filename='images/Sign-Up.png') }}" alt="Sign Up" id="signupImage" class="auth-image">
+            </div>
+        </div>
+
+        <!-- Right Side - Auth Panel -->
+        <div class="auth-section">
+            <div class="auth-card">
+                <!-- Tab Selectors (Folder Separators) -->
+                <div class="tab-selectors">
+                    <div class="tab-selector active" id="loginTab" data-tab="login">
+                        <span class="tab-label">Login</span>
+                    </div>
+                    <div class="tab-selector" id="signupTab" data-tab="signup">
+                        <span class="tab-label">Sign Up</span>
+                    </div>
+                </div>
+
+                <!-- Forms Container -->
+                <div class="forms-container">
+                    <!-- Login Form -->
+                    <form id="loginForm" class="auth-form active">
+                        <div class="form-group">
+                            <input type="email" id="loginEmail" name="email" placeholder="KU Mail" required>
+                            <span class="error-message" id="loginEmailError"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="loginPassword" name="password" placeholder="Password" required>
+                            <span class="error-message" id="loginPasswordError"></span>
+                        </div>
+                        <button type="submit" class="btn-primary" id="loginSubmit">
+                            <span class="btn-text">Sign In</span>
+                            <span class="btn-loader" style="display: none;"></span>
+                        </button>
+                    </form>
+
+                    <!-- Sign Up Form -->
+                    <form id="signupForm" class="auth-form">
+                        <div class="form-group">
+                            <input type="text" id="signupFirstName" name="firstName" placeholder="First Name" required>
+                            <span class="error-message" id="signupFirstNameError"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="signupLastName" name="lastName" placeholder="Last Name" required>
+                            <span class="error-message" id="signupLastNameError"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="signupEmail" name="email" placeholder="KU Mail (@ku.edu.tr)" required>
+                            <span class="error-message" id="signupEmailError"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="signupPassword" name="password" placeholder="Password (min 8 characters)" required>
+                            <span class="error-message" id="signupPasswordError"></span>
+                            <div class="password-strength" id="passwordStrength"></div>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="signupConfirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+                            <span class="error-message" id="signupConfirmPasswordError"></span>
+                        </div>
+                        <button type="submit" class="btn-primary" id="signupSubmit">
+                            <span class="btn-text">Create Account</span>
+                            <span class="btn-loader" style="display: none;"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>
+
+
+
