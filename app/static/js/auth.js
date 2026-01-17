@@ -154,6 +154,7 @@ async function handleSignup(e) {
     const firstName = document.getElementById('signupFirstName').value.trim();
     const lastName = document.getElementById('signupLastName').value.trim();
     const email = document.getElementById('signupEmail').value.trim();
+    const birthdate = document.getElementById('signupBirthdate').value;
     const password = document.getElementById('signupPassword').value;
     const confirmPassword = document.getElementById('signupConfirmPassword').value;
     const submitBtn = document.getElementById('signupSubmit');
@@ -181,6 +182,11 @@ async function handleSignup(e) {
         isValid = false;
     } else if (!isValidKUEmail(email)) {
         showError('signupEmailError', 'Please enter a valid KU Mail address (@ku.edu.tr)');
+        isValid = false;
+    }
+
+    if (!birthdate) {
+        showError('signupBirthdateError', 'Birthdate is required');
         isValid = false;
     }
 
@@ -219,6 +225,7 @@ async function handleSignup(e) {
                 firstName,
                 lastName,
                 email,
+                birthdate,
                 password
             })
         });
@@ -351,7 +358,7 @@ function clearError(errorId) {
 function clearErrors(formType) {
     const errorIds = formType === 'login' 
         ? ['loginEmailError', 'loginPasswordError']
-        : ['signupFirstNameError', 'signupLastNameError', 'signupEmailError', 'signupPasswordError', 'signupConfirmPasswordError'];
+        : ['signupFirstNameError', 'signupLastNameError', 'signupEmailError', 'signupBirthdateError', 'signupPasswordError', 'signupConfirmPasswordError'];
     
     errorIds.forEach(id => clearError(id));
 
