@@ -72,3 +72,12 @@ CREATE TABLE membership_requests (
   FOREIGN KEY (user_id) REFERENCES users(user_id),
   FOREIGN KEY (club_id) REFERENCES clubs(club_id)
 );
+
+-- User Credentials
+CREATE TABLE user_credentials (
+  email VARCHAR(255) PRIMARY KEY,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
+);
