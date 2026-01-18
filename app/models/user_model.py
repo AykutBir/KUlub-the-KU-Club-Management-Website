@@ -121,3 +121,32 @@ class User:
             raise e
         finally:
             cursor.close()
+
+    @staticmethod
+    def get_user_profile(user_id):
+        """Retrieve user profile fields for dashboard."""
+        cursor = get_cursor()
+
+        try:
+            # Fetch the profile fields used in the dashboard's profile section
+            cursor.execute(
+                "SELECT user_id, name, email, birthdate, role FROM users WHERE user_id = %s",
+                (user_id,),
+            )
+            result = cursor.fetchone()
+
+            if result:
+                uid, name, email, birthdate, role = result
+                return {
+                    'user_id': uid,
+                    'name': name,
+                    'email': email,
+                    'birthdate': birthdate,
+                    'role': role
+                }
+
+            return None
+        except Exception as e:
+            raise e
+        finally:
+            cursor.close()

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUlub - User Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <!-- Top navigation with branding and logout -->
+    <header class="top-nav">
+        <div class="brand">
+            <span class="brand-name">KUlub</span>
+            <span class="brand-tag">Basic Dashboard</span>
+        </div>
+        <div class="user-actions">
+            <span class="user-greeting">Hi, {{ first_name }}</span>
+            <button class="btn-outline" type="button" id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <!-- Left navigation -->
+        <aside class="sidebar">
+            <nav class="nav-links">
+                <a href="#discover" class="nav-link">Discover Clubs</a>
+                <a href="#events" class="nav-link">Events Feed</a>
+                <a href="#my-club" class="nav-link">My Club</a>
+                <a href="#my-events" class="nav-link">My Events</a>
+                <a href="#profile" class="nav-link">Profile</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <!-- Discover clubs section -->
+            <section class="section" id="discover">
+                <div class="section-header">
+                    <div>
+                        <h2>Discover Clubs</h2>
+                        <p>Find your next community on campus.</p>
+                    </div>
+                    <!-- Client-side search filter -->
+                    <div class="search-wrap">
+                        <input type="text" placeholder="Search clubs by name or type" data-club-search>
+                    </div>
+                </div>
+
+                {% if user_club %}
+                <div class="banner">
+                    You are already a member of {{ user_club.name }}.
+                </div>
+                {% endif %}
+
+                <div class="grid">
+                    {% for club in clubs %}
+                    <!-- Club card -->
+                    <article class="card club-card" data-club="{{ club.name }} {{ club.club_type }}">
+                        <div class="card-header">
+                            <h3>{{ club.name }}</h3>
+                            <span class="badge {{ club.club_type|lower }}">{{ club.club_type }}</span>
+                        </div>
+                        <p class="meta">Founded: {{ club.foundation_date }}</p>
+                        <div class="card-actions">
+                            <button class="btn-outline" type="button">Follow</button>
+                            {% if club.club_type == 'STANDARD' %}
+                                {% set status = membership_status_by_club.get(club.club_id) %}
+                                {% if user_club %}
+                                    <button class="btn-disabled" type="button" disabled>Membership Locked</button>
+                                {% elif status %}
+                                    <button class="btn-disabled" type="button" disabled>{{ status|capitalize }}</button>
+                                {% else %}
+                                    <button class="btn-primary" type="button">Request Membership</button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Events feed section -->
+            <section class="section" id="events">
+                <div class="section-header">
+                    <div>
+                        <h2>Events Feed</h2>
+                        <p>Upcoming gatherings across clubs and venues.</p>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    {% for event in events %}
+                    {% set is_saved = event.event_id in saved_event_ids %}
+                    {% set is_attending = event.event_id in attending_event_ids %}
+                    <!-- Event card -->
+                    <article class="card event-card">
+                        <div class="card-header">
+                            <h3>{{ event.name }}</h3>
+                            <span class="pill">{{ event.club_name }}</span>
+                        </div>
+                        <p class="meta">{{ event.publish_date }} - {{ event.end_date }}</p>
+                        <p class="meta">Venue: {{ event.venue_name }} (Capacity {{ event.capacity }})</p>
+                        <div class="card-actions">
+                            <button class="btn-outline" type="button" {% if is_attending %}disabled{% endif %}>
+                                {% if is_attending %}Saved Locked{% else %}Save{% endif %}
+                            </button>
+                            <button class="btn-primary" type="button" {% if is_saved %}disabled{% endif %}>
+                                {% if is_saved %}Attend Locked{% else %}Attend{% endif %}
+                            </button>
+                        </div>
+                        {% if is_saved %}
+                            <span class="hint">You saved this event. Attending is disabled.</span>
+                        {% elif is_attending %}
+                            <span class="hint">You are attending this event. Saving is disabled.</span>
+                        {% endif %}
+                    </article>
+                    {% endfor %}
+                    {% if events|length == 0 %}
+                    <!-- Empty state -->
+                    <div class="empty-state">No upcoming events yet. Check back soon.</div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- My club section -->
+            <section class="section" id="my-club">
+                <div class="section-header">
+                    <div>
+                        <h2>My Club</h2>
+                        <p>Keep track of your membership.</p>
+                    </div>
+                </div>
+
+                {% if user_club %}
+                <div class="card highlight">
+                    <div class="card-header">
+                        <h3>{{ user_club.name }}</h3>
+                        <span class="badge {{ user_club.club_type|lower }}">{{ user_club.club_type }}</span>
+                    </div>
+                    <p class="meta">Founded: {{ user_club.foundation_date }}</p>
+                    <button class="btn-outline" type="button">Leave Club</button>
+                </div>
+                {% else %}
+                <div class="card">
+                    <h3>No active membership</h3>
+                    <p class="meta">Submit a request to join a standard club.</p>
+                    {% if membership_requests|length > 0 %}
+                        <div class="request-list">
+                            {% for request in membership_requests %}
+                                <div class="request-item">
+                                    <span>{{ request.club_name }}</span>
+                                    <span class="status {{ request.status|lower }}">{{ request.status }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">No membership requests yet.</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- My events section -->
+            <section class="section" id="my-events">
+                <div class="section-header">
+                    <div>
+                        <h2>My Events</h2>
+                        <p>Your saved and attending events will appear here.</p>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="card">
+                        <h3>Saved Events</h3>
+                        <p class="meta">Track events you want to revisit.</p>
+                        <div class="empty-state">No saved events yet.</div>
+                    </div>
+                    <div class="card">
+                        <h3>Attending Events</h3>
+                        <p class="meta">Events you are committed to attend.</p>
+                        <div class="empty-state">No attending events yet.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile section -->
+            <section class="section" id="profile">
+                <div class="section-header">
+                    <div>
+                        <h2>Profile</h2>
+                        <p>Personal details from your account.</p>
+                    </div>
+                </div>
+
+                <div class="profile-card">
+                    <div class="profile-row">
+                        <label>Name</label>
+                        <input type="text" value="{{ user.name }}" readonly>
+                    </div>
+                    <div class="profile-row">
+                        <label>Email</label>
+                        <input type="text" value="{{ user.email }}" readonly>
+                    </div>
+                    <div class="profile-row">
+                        <label>Birthdate</label>
+                        <input type="text" value="{{ user.birthdate }}" readonly>
+                    </div>
+                    <div class="profile-row">
+                        <label>Role</label>
+                        <input type="text" value="{{ user.role }}" readonly>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Simple client-side helpers for search and logout -->
+    <script>
+        const searchInput = document.querySelector('[data-club-search]');
+        const clubCards = Array.from(document.querySelectorAll('.club-card'));
+        const logoutButton = document.getElementById('logoutButton');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (event) => {
+                const term = event.target.value.trim().toLowerCase();
+                clubCards.forEach((card) => {
+                    const haystack = card.dataset.club.toLowerCase();
+                    card.style.display = haystack.includes(term) ? '' : 'none';
+                });
+            });
+        }
+
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/logout', { method: 'POST' });
+                    const payload = await response.json();
+                    window.location.href = payload.redirect || '/login';
+                } catch (error) {
+                    window.location.href = '/login';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
