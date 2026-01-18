@@ -1,5 +1,3 @@
-DROP DATABASE club_management;
-
 CREATE DATABASE club_management;
 USE club_management;
 -- Users
