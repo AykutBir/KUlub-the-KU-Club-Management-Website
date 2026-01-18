@@ -23,6 +23,108 @@ body {
     min-height: 100vh;
 }
 
+/* Admin-only adjustments to match the system admin mockup. */
+.admin-page {
+    background: linear-gradient(180deg, #f5f6ff 0%, #f2f3ff 45%, #f8f8ff 100%);
+}
+
+.admin-page .top-nav {
+    box-shadow: 0 6px 18px rgba(31, 41, 55, 0.06);
+    padding: 20px 48px;
+}
+
+.admin-page .dashboard {
+    grid-template-columns: 260px 1fr;
+    gap: 28px;
+    padding-top: 28px;
+}
+
+.admin-page .sidebar {
+    border-radius: 20px;
+    box-shadow: 0 14px 30px rgba(31, 41, 55, 0.08);
+    border: 1px solid #ecebff;
+    padding: 18px;
+}
+
+.admin-page .nav-link {
+    font-size: 15px;
+    color: #4b5563;
+    padding: 12px 16px;
+    border-radius: 12px;
+}
+
+.admin-page .nav-link:hover {
+    background: #f3f2ff;
+    color: #312e81;
+}
+
+.admin-page .section-header h2 {
+    font-size: 26px;
+}
+
+.admin-page .section-header p {
+    font-size: 15px;
+}
+
+.admin-page .card,
+.admin-page .profile-card {
+    box-shadow: 0 12px 26px rgba(73, 64, 196, 0.08);
+    border: 1px solid #ecebff;
+    border-radius: 20px;
+    padding: 22px;
+}
+
+.admin-page .banner {
+    background: #e7e6ff;
+    border: 1px solid #d8d6ff;
+    color: #2f2a72;
+}
+
+.admin-page .btn-primary {
+    background: #6c63ff;
+    box-shadow: 0 10px 18px rgba(108, 99, 255, 0.2);
+    border-radius: 14px;
+    padding: 10px 18px;
+}
+
+.admin-page .btn-outline {
+    border-color: rgba(108, 99, 255, 0.35);
+    color: #4c46b5;
+    border-radius: 14px;
+    padding: 10px 18px;
+}
+
+.admin-page .pill,
+.admin-page .badge {
+    background: #f0efff;
+    color: #4c46b5;
+}
+
+.admin-page .request-item {
+    background: #f7f7ff;
+    border-radius: 14px;
+    padding: 12px 14px;
+}
+
+.admin-page .grid {
+    gap: 18px;
+}
+
+.admin-page .card-actions {
+    gap: 12px;
+}
+
+.admin-page .user-actions .btn-outline {
+    border-color: #d6d4ff;
+    color: #4c46b5;
+}
+
+.admin-page .profile-row input {
+    background: #f7f7ff;
+    border-color: #e4e3ff;
+    border-radius: 12px;
+}
+
 .top-nav {
     display: flex;
     align-items: center;
