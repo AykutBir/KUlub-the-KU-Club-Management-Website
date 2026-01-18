@@ -58,4 +58,10 @@ def clubmgr_dashboard():
 @require_role('SYSTEM_ADMIN')
 def admin_dashboard():
     """System admin dashboard"""
-    return "admin"
+    user_id = session.get('user_id')
+    user = User.get_user_profile(user_id)
+    if not user:
+        return redirect(url_for('auth.login_page'))
+
+    first_name = user.get('name', 'User').split(' ')[0]
+    return render_template('admin_dashboard.html', first_name=first_name)

@@ -46,7 +46,13 @@ def login_page():
 def login():
     """Handle login submission"""
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or request.form.to_dict()
+        if not data:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid request payload',
+                'field': None
+            }), 400
         email = data.get('email', '').strip()
         password = data.get('password', '')
 
@@ -101,7 +107,13 @@ def login():
 def signup():
     """Handle sign-up submission"""
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or request.form.to_dict()
+        if not data:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid request payload',
+                'field': None
+            }), 400
         firstName = data.get('firstName', '').strip()
         lastName = data.get('lastName', '').strip()
         email = data.get('email', '').strip()

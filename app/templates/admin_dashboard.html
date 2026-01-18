@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUlub - System Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body class="admin-page">
+    <header class="top-nav">
+        <div class="brand">
+            <span class="brand-name">KUlub</span>
+            <span class="brand-tag">System Admin</span>
+        </div>
+        <div class="user-actions">
+            <span class="user-greeting">Hi, {{ first_name }}</span>
+            <button class="btn-outline" type="button" id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <aside class="sidebar">
+            <nav class="nav-links">
+                <a href="#overview" class="nav-link">Overview</a>
+                <a href="#users" class="nav-link">User Management</a>
+                <a href="#clubs" class="nav-link">Club Approvals</a>
+                <a href="#events" class="nav-link">Event Management</a>
+                <a href="#reports" class="nav-link">Reports</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <section class="section" id="overview">
+                <div class="section-header">
+                    <div>
+                        <h2>Overview</h2>
+                        <p>System-wide snapshot and moderation reminders.</p>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <article class="card">
+                        <h3>Total Users</h3>
+                        <p class="meta">Placeholder: 1,248</p>
+                    </article>
+                    <article class="card">
+                        <h3>Active Clubs</h3>
+                        <p class="meta">Placeholder: 42</p>
+                    </article>
+                    <article class="card">
+                        <h3>Upcoming Events</h3>
+                        <p class="meta">Placeholder: 16</p>
+                    </article>
+                    <article class="card">
+                        <h3>Pending Approvals</h3>
+                        <p class="meta">Placeholder: 7 clubs/events</p>
+                    </article>
+                </div>
+                <div class="banner">
+                    System admins cannot follow clubs or attend events. Use this panel for oversight only.
+                </div>
+            </section>
+
+            <section class="section" id="users">
+                <div class="section-header">
+                    <div>
+                        <h2>User Management</h2>
+                        <p>Review users, roles, and access levels.</p>
+                    </div>
+                    <button class="btn-primary" type="button">Add New User</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Registered Users</h3>
+                        <span class="pill">Placeholder</span>
+                    </div>
+                    <div class="request-list">
+                        <div class="request-item">
+                            <span>Selin Kaya - BASIC</span>
+                            <span class="status approved">Active</span>
+                        </div>
+                        <div class="request-item">
+                            <span>Ahmet Demir - CLUB_ADMIN</span>
+                            <span class="status pending">Pending Role</span>
+                        </div>
+                        <div class="request-item">
+                            <span>Elif Yilmaz - SYSTEM_ADMIN</span>
+                            <span class="status approved">Active</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Role Actions</h3>
+                        <span class="pill">Placeholder</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-primary" type="button">Promote to Club Admin</button>
+                        <button class="btn-outline" type="button">Revoke Club Admin</button>
+                        <button class="btn-outline" type="button">Promote to System Admin</button>
+                    </div>
+                    <p class="meta">Use for assigning/removing admin privileges.</p>
+                </div>
+            </section>
+
+            <section class="section" id="clubs">
+                <div class="section-header">
+                    <div>
+                        <h2>Club Approvals</h2>
+                        <p>Approve or reject new club applications.</p>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <article class="card">
+                        <div class="card-header">
+                            <h3>Robotics Society</h3>
+                            <span class="badge official">Official</span>
+                        </div>
+                        <p class="meta">Founder: Ece Tan | Applied: 2024-03-10</p>
+                        <div class="card-actions">
+                            <button class="btn-primary" type="button">Approve</button>
+                            <button class="btn-outline" type="button">Reject</button>
+                        </div>
+                    </article>
+                    <article class="card">
+                        <div class="card-header">
+                            <h3>Photography Guild</h3>
+                            <span class="badge standard">Standard</span>
+                        </div>
+                        <p class="meta">Founder: Can Aksoy | Applied: 2024-03-12</p>
+                        <div class="card-actions">
+                            <button class="btn-primary" type="button">Approve</button>
+                            <button class="btn-outline" type="button">Reject</button>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Create Club & Assign Admin</h3>
+                        <span class="pill">Placeholder</span>
+                    </div>
+                    <div class="profile-card">
+                        <div class="profile-row">
+                            <label>Club Name</label>
+                            <input type="text" value="Placeholder Club" readonly>
+                        </div>
+                        <div class="profile-row">
+                            <label>Foundation Date</label>
+                            <input type="text" value="2024-03-15" readonly>
+                        </div>
+                        <div class="profile-row">
+                            <label>Assign Club Admin</label>
+                            <input type="text" value="user@ku.edu.tr" readonly>
+                        </div>
+                        <div class="profile-row">
+                            <label>Initial Budget</label>
+                            <input type="text" value="₺15,000" readonly>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-primary" type="button">Create Club</button>
+                        <button class="btn-outline" type="button">Clear Draft</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="events">
+                <div class="section-header">
+                    <div>
+                        <h2>Event Management</h2>
+                        <p>Track pending and published events.</p>
+                    </div>
+                    <button class="btn-primary" type="button">Create Event</button>
+                </div>
+
+                <div class="grid">
+                    <article class="card">
+                        <div class="card-header">
+                            <h3>AI Workshop</h3>
+                            <span class="pill">Pending</span>
+                        </div>
+                        <p class="meta">Hosted by Robotics Society | 2024-04-02</p>
+                        <div class="card-actions">
+                            <button class="btn-primary" type="button">Publish</button>
+                            <button class="btn-outline" type="button">Edit</button>
+                            <button class="btn-outline" type="button">Delete</button>
+                        </div>
+                    </article>
+                    <article class="card">
+                        <div class="card-header">
+                            <h3>Campus Photo Walk</h3>
+                            <span class="pill">Live</span>
+                        </div>
+                        <p class="meta">Hosted by Photography Guild | 2024-04-05</p>
+                        <div class="card-actions">
+                            <button class="btn-outline" type="button">Edit</button>
+                            <button class="btn-outline" type="button">Delete</button>
+                        </div>
+                    </article>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Moderation Queue</h3>
+                        <span class="pill">Placeholder</span>
+                    </div>
+                    <div class="request-list">
+                        <div class="request-item">
+                            <span>Spring Concert - remove request</span>
+                            <span class="status pending">Review</span>
+                        </div>
+                        <div class="request-item">
+                            <span>Career Day - flagged content</span>
+                            <span class="status pending">Review</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="reports">
+                <div class="section-header">
+                    <div>
+                        <h2>Reports</h2>
+                        <p>Summary metrics for quick decisions.</p>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <article class="card">
+                        <h3>User Growth</h3>
+                        <p class="meta">Placeholder: +8% this month</p>
+                    </article>
+                    <article class="card">
+                        <h3>Event Engagement</h3>
+                        <p class="meta">Placeholder: 312 RSVPs</p>
+                    </article>
+                    <article class="card">
+                        <h3>Top Clubs</h3>
+                        <p class="meta">Placeholder: Robotics, Music, Chess</p>
+                    </article>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Analytics Queries</h3>
+                        <span class="pill">Placeholder</span>
+                    </div>
+                    <div class="request-list">
+                        <div class="request-item">
+                            <span>Average attendance per club</span>
+                            <span class="status approved">Ready</span>
+                        </div>
+                        <div class="request-item">
+                            <span>Most saved events (top 5)</span>
+                            <span class="status approved">Ready</span>
+                        </div>
+                        <div class="request-item">
+                            <span>Members with highest participation</span>
+                            <span class="status approved">Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const logoutButton = document.getElementById('logoutButton');
+
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/logout', { method: 'POST' });
+                    const payload = await response.json();
+                    window.location.href = payload.redirect || '/login';
+                } catch (error) {
+                    window.location.href = '/login';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
