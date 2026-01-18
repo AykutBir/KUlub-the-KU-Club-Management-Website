@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUlub - Event Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/club_manager.css') }}">
+</head>
+<body>
+    <!-- Top navigation -->
+    <header class="top-nav">
+        <div class="brand">
+            <span class="brand-name">KUlub</span>
+            <span class="brand-tag">Club Manager</span>
+        </div>
+        <div class="user-actions">
+            <span class="user-greeting">Hi, {{ user_name }}</span>
+            <button class="btn-outline" type="button" id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <!-- Sidebar navigation -->
+        <aside class="sidebar">
+            <nav class="nav-links">
+                <a href="{{ url_for('club_manager.dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' }}">Dashboard</a>
+                <a href="{{ url_for('club_manager.members') }}" class="nav-link {{ 'active' if active_page == 'members' }}">Members</a>
+                <a href="{{ url_for('club_manager.events') }}" class="nav-link {{ 'active' if active_page == 'events' }}">Events</a>
+                <a href="{{ url_for('club_manager.analytics') }}" class="nav-link {{ 'active' if active_page == 'analytics' }}">Analytics</a>
+                <a href="{{ url_for('club_manager.budget') }}" class="nav-link {{ 'active' if active_page == 'budget' }}">Budget</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <section class="section">
+                <div class="section-header-row">
+                    <div>
+                        <h1 class="page-title">Event Management</h1>
+                        <p class="page-subtitle">{{ club.name }}</p>
+                    </div>
+                    <button class="btn-primary" onclick="openCreateModal()">+ Create Event</button>
+                </div>
+
+                <!-- Events Table -->
+                {% if events|length > 0 %}
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Event Name</th>
+                                <th>Category</th>
+                                <th>Start Date</th>
+                                <th>Venue</th>
+                                <th>Quota</th>
+                                <th>Attendance</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                            <tr data-event-id="{{ event.event_id }}">
+                                <td>
+                                    <strong>{{ event.name }}</strong>
+                                    <br><small class="text-muted">{{ event.description[:50] }}...</small>
+                                </td>
+                                <td><span class="pill">{{ event.category or 'General' }}</span></td>
+                                <td>{{ event.event_start_date or event.publish_date }}</td>
+                                <td>{{ event.venue_name }}</td>
+                                <td>{{ event.quota }}</td>
+                                <td>
+                                    <div class="attendance-bar">
+                                        <div class="attendance-fill" style="width: {{ (event.attendance_count / event.quota * 100) if event.quota > 0 else 0 }}%"></div>
+                                        <span class="attendance-text">{{ event.attendance_count }}/{{ event.quota }}</span>
+                                    </div>
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="btn-danger btn-sm" onclick="confirmDelete({{ event.event_id }}, '{{ event.name }}')">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <p>No events yet. Create your first event!</p>
+                </div>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div class="modal" id="createModal">
+        <div class="modal-content modal-large">
+            <h3>Create New Event</h3>
+            <form id="createEventForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="name">Event Name *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category">
+                            <option value="Workshop">Workshop</option>
+                            <option value="Seminar">Seminar</option>
+                            <option value="Competition">Competition</option>
+                            <option value="Activity">Activity</option>
+                            <option value="Exhibition">Exhibition</option>
+                            <option value="Trip">Trip</option>
+                            <option value="General">General</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="description">Description *</label>
+                        <textarea id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="venue_id">Venue *</label>
+                        <select id="venue_id" name="venue_id" required onchange="updateCapacityHint()">
+                            <option value="">Select a venue</option>
+                            {% for venue in venues %}
+                            <option value="{{ venue.venue_id }}" data-capacity="{{ venue.capacity }}">
+                                {{ venue.name }} (Capacity: {{ venue.capacity }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small id="capacityHint" class="form-hint"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="quota">Quota *</label>
+                        <input type="number" id="quota" name="quota" min="1" required>
+                        <small class="form-hint">Must not exceed venue capacity</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="publish_date">Publish Date *</label>
+                        <input type="date" id="publish_date" name="publish_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="event_start_date">Event Start *</label>
+                        <input type="datetime-local" id="event_start_date" name="event_start_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="end_date">End Date *</label>
+                        <input type="date" id="end_date" name="end_date" required>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-outline" onclick="closeCreateModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalMessage">Are you sure?</p>
+            <div class="modal-actions">
+                <button class="btn-outline" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn-danger" id="confirmBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/club_manager.js') }}"></script>
+    <script>
+        // Open create modal
+        function openCreateModal() {
+            document.getElementById('createModal').classList.add('active');
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('publish_date').value = today;
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.remove('active');
+            document.getElementById('createEventForm').reset();
+        }
+
+        // Update capacity hint when venue changes
+        function updateCapacityHint() {
+            const select = document.getElementById('venue_id');
+            const option = select.options[select.selectedIndex];
+            const hint = document.getElementById('capacityHint');
+            const quotaInput = document.getElementById('quota');
+
+            if (option.value) {
+                const capacity = option.dataset.capacity;
+                hint.textContent = `Max capacity: ${capacity}`;
+                quotaInput.max = capacity;
+            } else {
+                hint.textContent = '';
+                quotaInput.removeAttribute('max');
+            }
+        }
+
+        // Create event form submission
+        document.getElementById('createEventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch('/clubmgr/events/create', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    closeCreateModal();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred', 'error');
+            }
+        });
+
+        // Delete event
+        let pendingDeleteEventId = null;
+
+        function confirmDelete(eventId, eventName) {
+            pendingDeleteEventId = eventId;
+            document.getElementById('modalTitle').textContent = 'Delete Event';
+            document.getElementById('modalMessage').textContent = `Are you sure you want to delete "${eventName}"? This action cannot be undone.`;
+            document.getElementById('confirmBtn').onclick = deleteEvent;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        async function deleteEvent() {
+            if (!pendingDeleteEventId) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('event_id', pendingDeleteEventId);
+
+                const response = await fetch('/clubmgr/events/delete', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                closeConfirmModal();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                closeConfirmModal();
+                showToast('An error occurred', 'error');
+            }
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            pendingDeleteEventId = null;
+        }
+    </script>
+</body>
+</html>

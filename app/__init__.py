@@ -2,6 +2,7 @@ from flask import Flask
 from dotenv import load_dotenv
 from app.routes.auth import auth_bp
 from app.routes.dashboard_routes import dashboard_bp
+from app.routes.club_manager import club_manager_bp
 from app.db import init_db
 
 # Load environment variables
@@ -20,6 +21,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(club_manager_bp)
     
     # Set login route as default
     @app.route('/')

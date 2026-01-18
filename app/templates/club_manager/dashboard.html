@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUlub - Club Manager Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/club_manager.css') }}">
+</head>
+<body>
+    <!-- Top navigation -->
+    <header class="top-nav">
+        <div class="brand">
+            <span class="brand-name">KUlub</span>
+            <span class="brand-tag">Club Manager</span>
+        </div>
+        <div class="user-actions">
+            <span class="user-greeting">Hi, {{ user_name }}</span>
+            <button class="btn-outline" type="button" id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <!-- Sidebar navigation -->
+        <aside class="sidebar">
+            <nav class="nav-links">
+                <a href="{{ url_for('club_manager.dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' }}">Dashboard</a>
+                <a href="{{ url_for('club_manager.members') }}" class="nav-link {{ 'active' if active_page == 'members' }}">Members</a>
+                <a href="{{ url_for('club_manager.events') }}" class="nav-link {{ 'active' if active_page == 'events' }}">Events</a>
+                <a href="{{ url_for('club_manager.analytics') }}" class="nav-link {{ 'active' if active_page == 'analytics' }}">Analytics</a>
+                <a href="{{ url_for('club_manager.budget') }}" class="nav-link {{ 'active' if active_page == 'budget' }}">Budget</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <!-- Club Info Card -->
+            <section class="section">
+                <div class="club-info-card">
+                    <div class="club-header">
+                        <h1>{{ club.name }}</h1>
+                        <span class="badge {{ club.club_type|lower }}">{{ club.club_type }}</span>
+                    </div>
+                    <p class="club-description">{{ club.description or 'No description available.' }}</p>
+                    <div class="club-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Founded</span>
+                            <span class="meta-value">{{ club.foundation_date }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Current Balance</span>
+                            <span class="meta-value balance">${{ "%.2f"|format(club.budget) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KPI Cards -->
+            <section class="section">
+                <h2 class="section-title">Key Metrics</h2>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon members-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-value">{{ member_count }}</span>
+                            <span class="kpi-label">Total Members</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon events-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-value">{{ upcoming_events }}</span>
+                            <span class="kpi-label">Upcoming Events</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon attendance-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-value">{{ attendance_30d }}</span>
+                            <span class="kpi-label">Attendance (30 days)</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon popular-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-value popular-event-name">{{ popular_event.name }}</span>
+                            <span class="kpi-label">Most Popular Event ({{ popular_event.attendance }} attendees)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="section">
+                <h2 class="section-title">Quick Actions</h2>
+                <div class="quick-actions">
+                    <a href="{{ url_for('club_manager.members') }}" class="action-card">
+                        <span class="action-icon">+</span>
+                        <span class="action-text">Manage Members</span>
+                    </a>
+                    <a href="{{ url_for('club_manager.events') }}" class="action-card">
+                        <span class="action-icon">+</span>
+                        <span class="action-text">Create Event</span>
+                    </a>
+                    <a href="{{ url_for('club_manager.analytics') }}" class="action-card">
+                        <span class="action-icon">...</span>
+                        <span class="action-text">View Analytics</span>
+                    </a>
+                    <a href="{{ url_for('club_manager.budget') }}" class="action-card">
+                        <span class="action-icon">$</span>
+                        <span class="action-text">Track Budget</span>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/club_manager.js') }}"></script>
+</body>
+</html>
