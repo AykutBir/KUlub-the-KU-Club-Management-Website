@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUlub - Membership Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/club_manager.css') }}">
+</head>
+<body>
+    <!-- Top navigation -->
+    <header class="top-nav">
+        <div class="brand">
+            <span class="brand-name">KUlub</span>
+            <span class="brand-tag">Club Manager</span>
+        </div>
+        <div class="user-actions">
+            <span class="user-greeting">Hi, {{ user_name }}</span>
+            <button class="btn-outline" type="button" id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <!-- Sidebar navigation -->
+        <aside class="sidebar">
+            <nav class="nav-links">
+                <a href="{{ url_for('club_manager.dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' }}">Dashboard</a>
+                <a href="{{ url_for('club_manager.members') }}" class="nav-link {{ 'active' if active_page == 'members' }}">Members</a>
+                <a href="{{ url_for('club_manager.events') }}" class="nav-link {{ 'active' if active_page == 'events' }}">Events</a>
+                <a href="{{ url_for('club_manager.analytics') }}" class="nav-link {{ 'active' if active_page == 'analytics' }}">Analytics</a>
+                <a href="{{ url_for('club_manager.budget') }}" class="nav-link {{ 'active' if active_page == 'budget' }}">Budget</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <section class="section">
+                <h1 class="page-title">Membership Management</h1>
+                <p class="page-subtitle">{{ club.name }}</p>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="pending">
+                        Pending Requests
+                        {% if pending_requests|length > 0 %}
+                        <span class="badge-count">{{ pending_requests|length }}</span>
+                        {% endif %}
+                    </button>
+                    <button class="tab-btn" data-tab="members">
+                        Current Members
+                        <span class="badge-count">{{ current_members|length }}</span>
+                    </button>
+                </div>
+
+                <!-- Pending Requests Tab -->
+                <div class="tab-content active" id="pending-tab">
+                    {% if pending_requests|length > 0 %}
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Request Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in pending_requests %}
+                                <tr data-request-id="{{ req.request_id }}">
+                                    <td>{{ req.name }}</td>
+                                    <td>{{ req.email }}</td>
+                                    <td>{{ req.requested_at }}</td>
+                                    <td class="actions-cell">
+                                        <button class="btn-success btn-sm" onclick="approveRequest({{ req.request_id }})">
+                                            Approve
+                                        </button>
+                                        <button class="btn-danger btn-sm" onclick="declineRequest({{ req.request_id }})">
+                                            Decline
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <p>No pending membership requests.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Current Members Tab -->
+                <div class="tab-content" id="members-tab">
+                    {% if current_members|length > 0 %}
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Title</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in current_members %}
+                                <tr data-user-id="{{ member.user_id }}">
+                                    <td>{{ member.name }}</td>
+                                    <td>{{ member.email }}</td>
+                                    <td>
+                                        <select class="title-select" data-user-id="{{ member.user_id }}" onchange="updateTitle({{ member.user_id }}, this.value)">
+                                            <option value="Member" {{ 'selected' if member.membership_title == 'Member' }}>Member</option>
+                                            <option value="Treasurer" {{ 'selected' if member.membership_title == 'Treasurer' }}>Treasurer</option>
+                                            <option value="Board Member" {{ 'selected' if member.membership_title == 'Board Member' }}>Board Member</option>
+                                            <option value="Vice President" {{ 'selected' if member.membership_title == 'Vice President' }}>Vice President</option>
+                                            <option value="Secretary" {{ 'selected' if member.membership_title == 'Secretary' }}>Secretary</option>
+                                        </select>
+                                    </td>
+                                    <td>{{ member.joined_at }}</td>
+                                    <td class="actions-cell">
+                                        <button class="btn-danger btn-sm" onclick="confirmKick({{ member.user_id }}, '{{ member.name }}')">
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <p>No members yet. Approve pending requests to add members.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalMessage">Are you sure?</p>
+            <div class="modal-actions">
+                <button class="btn-outline" onclick="closeModal()">Cancel</button>
+                <button class="btn-danger" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/club_manager.js') }}"></script>
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab + '-tab').classList.add('active');
+            });
+        });
+
+        // Approve request
+        async function approveRequest(requestId) {
+            try {
+                const formData = new FormData();
+                formData.append('request_id', requestId);
+
+                const response = await fetch('/clubmgr/members/approve', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred', 'error');
+            }
+        }
+
+        // Decline request
+        async function declineRequest(requestId) {
+            try {
+                const formData = new FormData();
+                formData.append('request_id', requestId);
+
+                const response = await fetch('/clubmgr/members/decline', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred', 'error');
+            }
+        }
+
+        // Update title
+        async function updateTitle(userId, newTitle) {
+            try {
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('title', newTitle);
+
+                const response = await fetch('/clubmgr/members/update-title', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred', 'error');
+            }
+        }
+
+        // Confirm kick
+        let pendingKickUserId = null;
+        function confirmKick(userId, userName) {
+            pendingKickUserId = userId;
+            document.getElementById('modalTitle').textContent = 'Remove Member';
+            document.getElementById('modalMessage').textContent = `Are you sure you want to remove ${userName} from the club?`;
+            document.getElementById('confirmBtn').onclick = kickMember;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        async function kickMember() {
+            if (!pendingKickUserId) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('user_id', pendingKickUserId);
+
+                const response = await fetch('/clubmgr/members/kick', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                closeModal();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                closeModal();
+                showToast('An error occurred', 'error');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            pendingKickUserId = null;
+        }
+    </script>
+</body>
+</html>

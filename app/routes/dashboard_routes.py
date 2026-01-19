@@ -47,13 +47,6 @@ def user_dashboard():
         attending_event_ids=attending_event_ids,
     )
 
-@dashboard_bp.route('/clubmgr')
-@require_login
-@require_role('CLUB_ADMIN')
-def clubmgr_dashboard():
-    """Club admin dashboard"""
-    return "clubmgr"
-
 @dashboard_bp.route('/admin')
 @require_login
 @require_role('SYSTEM_ADMIN')
