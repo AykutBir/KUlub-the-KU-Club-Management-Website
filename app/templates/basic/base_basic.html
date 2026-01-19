@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUlub - Basic Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/basic_dashboard.css') }}">
+</head>
+<body>
+    <!-- Top navigation with branding and logout -->
+    <header class="top-nav">
+        <div class="brand">
+            <span class="brand-name">KUlub</span>
+            <span class="brand-tag">Basic Dashboard</span>
+        </div>
+        <div class="user-actions">
+            <span class="user-greeting">Hi, {{ first_name }}</span>
+            <button class="btn-outline" type="button" id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <!-- Sidebar navigation -->
+        <aside class="sidebar">
+            <nav class="nav-links">
+                <a href="{{ url_for('dashboard.basic_discover') }}" class="nav-link {{ 'active' if active_page == 'discover' }}">Discover Clubs</a>
+                <a href="{{ url_for('dashboard.basic_followed') }}" class="nav-link {{ 'active' if active_page == 'followed' }}">Followed Clubs</a>
+                <a href="{{ url_for('dashboard.basic_feed') }}" class="nav-link {{ 'active' if active_page == 'feed' }}">Events Feed</a>
+                <a href="{{ url_for('dashboard.basic_my_club') }}" class="nav-link {{ 'active' if active_page == 'my_club' }}">My Club</a>
+                <a href="{{ url_for('dashboard.basic_my_events') }}" class="nav-link {{ 'active' if active_page == 'my_events' }}">My Events</a>
+                <a href="{{ url_for('dashboard.basic_profile') }}" class="nav-link {{ 'active' if active_page == 'profile' }}">Profile</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flash-list">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/logout', { method: 'POST' });
+                    const payload = await response.json();
+                    window.location.href = payload.redirect || '/login';
+                } catch (error) {
+                    window.location.href = '/login';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

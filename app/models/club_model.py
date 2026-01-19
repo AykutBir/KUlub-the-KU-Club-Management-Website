@@ -87,6 +87,166 @@ class Club:
             cursor.close()
 
     @staticmethod
+    def get_pending_request_for_user(user_id):
+        """Check if the user already has a pending membership request."""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT request_id, club_id
+                FROM membership_requests
+                WHERE user_id = %s AND status = 'PENDING'
+                LIMIT 1
+                """,
+                (user_id,),
+            )
+            row = cursor.fetchone()
+            if not row:
+                return None
+            return {"request_id": row[0], "club_id": row[1]}
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def create_membership_request(user_id, club_id):
+        """Create a membership request if the user is eligible."""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            # Block if user already belongs to a club
+            cursor.execute(
+                "SELECT 1 FROM club_members WHERE user_id = %s LIMIT 1",
+                (user_id,),
+            )
+            if cursor.fetchone():
+                return False, "You are already a member of a club."
+
+            # Block if user already has a pending request
+            cursor.execute(
+                """
+                SELECT 1 FROM membership_requests
+                WHERE user_id = %s AND status = 'PENDING'
+                LIMIT 1
+                """,
+                (user_id,),
+            )
+            if cursor.fetchone():
+                return False, "You already have a pending membership request."
+
+            # Block requests for OFFICIAL clubs
+            cursor.execute(
+                "SELECT club_type FROM clubs WHERE club_id = %s",
+                (club_id,),
+            )
+            club = cursor.fetchone()
+            if not club:
+                return False, "Club not found."
+            if club[0] == 'OFFICIAL':
+                return False, "Official clubs do not accept membership requests."
+
+            cursor.execute(
+                """
+                INSERT INTO membership_requests (user_id, club_id)
+                VALUES (%s, %s)
+                """,
+                (user_id, club_id),
+            )
+            db.commit()
+            return True, "Membership request sent."
+        except Exception as e:
+            db.rollback()
+            return False, str(e)
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def follow_club(user_id, club_id):
+        """Follow a club."""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                INSERT INTO club_followers (user_id, club_id)
+                VALUES (%s, %s)
+                ON DUPLICATE KEY UPDATE followed_at = followed_at
+                """,
+                (user_id, club_id),
+            )
+            db.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def unfollow_club(user_id, club_id):
+        """Unfollow a club."""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                "DELETE FROM club_followers WHERE user_id = %s AND club_id = %s",
+                (user_id, club_id),
+            )
+            db.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def is_following(user_id, club_id):
+        """Check if the user is following a club."""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM club_followers
+                WHERE user_id = %s AND club_id = %s
+                LIMIT 1
+                """,
+                (user_id, club_id),
+            )
+            return cursor.fetchone() is not None
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def get_followed_clubs(user_id):
+        """Get clubs followed by the user."""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT c.club_id, c.name, c.club_type, c.foundation_date, cf.followed_at
+                FROM club_followers cf
+                JOIN clubs c ON c.club_id = cf.club_id
+                WHERE cf.user_id = %s
+                ORDER BY cf.followed_at DESC
+                """,
+                (user_id,),
+            )
+            rows = cursor.fetchall()
+            return [
+                {
+                    "club_id": row[0],
+                    "name": row[1],
+                    "club_type": row[2],
+                    "foundation_date": row[3],
+                    "followed_at": row[4],
+                }
+                for row in rows
+            ]
+        finally:
+            cursor.close()
+
+    @staticmethod
     def get_club_admin(club_id):
         """Get admin user for a club"""
         cursor = get_cursor()
@@ -185,7 +345,7 @@ class Club:
         cursor = get_cursor()
         try:
             cursor.execute(
-                "SELECT club_id, name, admin_user_id FROM clubs WHERE club_id = %s",
+                "SELECT club_id, name, club_type, admin_user_id FROM clubs WHERE club_id = %s",
                 (club_id,)
             )
             result = cursor.fetchone()
@@ -193,7 +353,8 @@ class Club:
                 return {
                     'club_id': result[0],
                     'name': result[1],
-                    'admin_user_id': result[2]
+                    'club_type': result[2],
+                    'admin_user_id': result[3]
                 }
             return None
         except Exception as e:

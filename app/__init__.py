@@ -2,6 +2,8 @@ from flask import Flask
 from dotenv import load_dotenv
 from app.routes.auth import auth_bp
 from app.routes.dashboard_routes import dashboard_bp
+from app.routes.club_routes import club_bp
+from app.routes.event_routes import event_bp
 from app.routes.admin_routes import admin_bp
 from app.routes.club_manager import club_manager_bp
 from app.db import init_db
@@ -22,6 +24,8 @@ def create_app():
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(club_bp)
+    app.register_blueprint(event_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(club_manager_bp)
 

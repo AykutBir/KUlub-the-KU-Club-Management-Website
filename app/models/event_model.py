@@ -11,6 +11,7 @@ class Event:
             cursor.execute(
                 """
                 SELECT e.event_id,
+                       e.club_id,
                        e.name,
                        e.publish_date,
                        e.end_date,
@@ -29,12 +30,13 @@ class Event:
             return [
                 {
                     "event_id": row[0],
-                    "name": row[1],
-                    "publish_date": row[2],
-                    "end_date": row[3],
-                    "club_name": row[4],
-                    "venue_name": row[5],
-                    "capacity": row[6],
+                    "club_id": row[1],
+                    "name": row[2],
+                    "publish_date": row[3],
+                    "end_date": row[4],
+                    "club_name": row[5],
+                    "venue_name": row[6],
+                    "capacity": row[7],
                 }
                 for row in rows
             ]
@@ -367,5 +369,201 @@ class Event:
                 "total_pages": total_pages,
                 "current_page": page
             }
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def save_event(user_id, event_id):
+        """Save an event for a user."""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                INSERT INTO event_saves (user_id, event_id)
+                VALUES (%s, %s)
+                ON DUPLICATE KEY UPDATE saved_at = saved_at
+                """,
+                (user_id, event_id),
+            )
+            db.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def unsave_event(user_id, event_id):
+        """Remove a saved event for a user."""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                "DELETE FROM event_saves WHERE user_id = %s AND event_id = %s",
+                (user_id, event_id),
+            )
+            db.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def attend_event(user_id, event_id):
+        """Mark attendance for a user."""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                INSERT INTO event_attendance (user_id, event_id)
+                VALUES (%s, %s)
+                ON DUPLICATE KEY UPDATE attended_at = attended_at
+                """,
+                (user_id, event_id),
+            )
+            db.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def cancel_attendance(user_id, event_id):
+        """Remove attendance for a user."""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                "DELETE FROM event_attendance WHERE user_id = %s AND event_id = %s",
+                (user_id, event_id),
+            )
+            db.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def has_saved(user_id, event_id):
+        """Check if user saved the event."""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM event_saves
+                WHERE user_id = %s AND event_id = %s
+                LIMIT 1
+                """,
+                (user_id, event_id),
+            )
+            return cursor.fetchone() is not None
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def is_attending(user_id, event_id):
+        """Check if user is attending the event."""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM event_attendance
+                WHERE user_id = %s AND event_id = %s
+                LIMIT 1
+                """,
+                (user_id, event_id),
+            )
+            return cursor.fetchone() is not None
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def get_user_saved_events(user_id):
+        """Get events saved by the user."""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT e.event_id,
+                       e.name,
+                       e.publish_date,
+                       e.end_date,
+                       c.name AS club_name,
+                       v.name AS venue_name,
+                       v.capacity
+                FROM event_saves es
+                JOIN events e ON e.event_id = es.event_id
+                JOIN clubs c ON c.club_id = e.club_id
+                JOIN venues v ON v.venue_id = e.venue_id
+                WHERE es.user_id = %s
+                  AND e.deleted = FALSE
+                ORDER BY es.saved_at DESC
+                """,
+                (user_id,),
+            )
+            rows = cursor.fetchall()
+            return [
+                {
+                    "event_id": row[0],
+                    "name": row[1],
+                    "publish_date": row[2],
+                    "end_date": row[3],
+                    "club_name": row[4],
+                    "venue_name": row[5],
+                    "capacity": row[6],
+                }
+                for row in rows
+            ]
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def get_user_attended_events(user_id):
+        """Get events the user is attending."""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT e.event_id,
+                       e.name,
+                       e.publish_date,
+                       e.end_date,
+                       c.name AS club_name,
+                       v.name AS venue_name,
+                       v.capacity
+                FROM event_attendance ea
+                JOIN events e ON e.event_id = ea.event_id
+                JOIN clubs c ON c.club_id = e.club_id
+                JOIN venues v ON v.venue_id = e.venue_id
+                WHERE ea.user_id = %s
+                  AND e.deleted = FALSE
+                ORDER BY ea.attended_at DESC
+                """,
+                (user_id,),
+            )
+            rows = cursor.fetchall()
+            return [
+                {
+                    "event_id": row[0],
+                    "name": row[1],
+                    "publish_date": row[2],
+                    "end_date": row[3],
+                    "club_name": row[4],
+                    "venue_name": row[5],
+                    "capacity": row[6],
+                }
+                for row in rows
+            ]
         finally:
             cursor.close()

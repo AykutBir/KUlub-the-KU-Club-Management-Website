@@ -1,0 +1,40 @@
+{% extends 'basic/base_basic.html' %}
+
+{% block content %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2>My Club</h2>
+            <p>Track your membership status.</p>
+        </div>
+    </div>
+
+    {% if user_club %}
+    <div class="card highlight">
+        <div class="card-header">
+            <h3>{{ user_club.name }}</h3>
+            <span class="badge {{ user_club.club_type|lower }}">{{ user_club.club_type }}</span>
+        </div>
+        <p class="meta">Founded: {{ user_club.foundation_date }}</p>
+        <button class="btn-outline" type="button">Leave Club</button>
+    </div>
+    {% else %}
+    <div class="card">
+        <h3>No active membership</h3>
+        <p class="meta">Submit a request to join a standard club.</p>
+        {% if membership_requests|length > 0 %}
+        <div class="request-list">
+            {% for request in membership_requests %}
+                <div class="request-item">
+                    <span>{{ request.club_name }}</span>
+                    <span class="status {{ request.status|lower }}">{{ request.status }}</span>
+                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">No membership requests yet.</div>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'basic/base_basic.html' %}
+
+{% block content %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2>My Events</h2>
+            <p>Saved events and upcoming attendance.</p>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Saved Events</h3>
+            <p class="meta">Track events you want to revisit.</p>
+            {% if saved_events|length == 0 %}
+            <div class="empty-state">No saved events yet.</div>
+            {% else %}
+            <div class="mini-list">
+                {% for event in saved_events %}
+                <div class="mini-item">
+                    <div>
+                        <strong>{{ event.name }}</strong>
+                        <div class="meta">{{ event.club_name }} · {{ event.publish_date }} - {{ event.end_date }}</div>
+                    </div>
+                    <form method="POST" action="{{ url_for('events.unsave_event', event_id=event.event_id) }}">
+                        <button class="btn-outline" type="submit">Unsave</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="card">
+            <h3>Attending Events</h3>
+            <p class="meta">Events you are committed to attend.</p>
+            {% if attended_events|length == 0 %}
+            <div class="empty-state">No attending events yet.</div>
+            {% else %}
+            <div class="mini-list">
+                {% for event in attended_events %}
+                <div class="mini-item">
+                    <div>
+                        <strong>{{ event.name }}</strong>
+                        <div class="meta">{{ event.club_name }} · {{ event.publish_date }} - {{ event.end_date }}</div>
+                    </div>
+                    <form method="POST" action="{{ url_for('events.cancel_attendance', event_id=event.event_id) }}">
+                        <button class="btn-outline" type="submit">Cancel</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
