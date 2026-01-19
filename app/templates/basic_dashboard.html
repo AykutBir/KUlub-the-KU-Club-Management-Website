@@ -24,6 +24,7 @@
         <aside class="sidebar">
             <nav class="nav-links">
                 <a href="#discover" class="nav-link">Discover Clubs</a>
+                <a href="#followed-clubs" class="nav-link">Followed Clubs</a>
                 <a href="#events" class="nav-link">Events Feed</a>
                 <a href="#my-club" class="nav-link">My Club</a>
                 <a href="#my-events" class="nav-link">My Events</a>
@@ -32,6 +33,17 @@
         </aside>
 
         <main class="content">
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flash-list">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endwith %}
+
             <!-- Discover clubs section -->
             <section class="section" id="discover">
                 <div class="section-header">
@@ -61,7 +73,15 @@
                         </div>
                         <p class="meta">Founded: {{ club.foundation_date }}</p>
                         <div class="card-actions">
-                            <button class="btn-outline" type="button">Follow</button>
+                            {% if club.club_id in followed_club_ids %}
+                            <form method="POST" action="{{ url_for('clubs.unfollow_club', club_id=club.club_id) }}">
+                                <button class="btn-outline" type="submit">Unfollow</button>
+                            </form>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('clubs.follow_club', club_id=club.club_id) }}">
+                                <button class="btn-outline" type="submit">Follow</button>
+                            </form>
+                            {% endif %}
                             {% if club.club_type == 'STANDARD' %}
                                 {% set status = membership_status_by_club.get(club.club_id) %}
                                 {% if user_club %}
@@ -69,12 +89,41 @@
                                 {% elif status %}
                                     <button class="btn-disabled" type="button" disabled>{{ status|capitalize }}</button>
                                 {% else %}
-                                    <button class="btn-primary" type="button">Request Membership</button>
+                                    <form method="POST" action="{{ url_for('clubs.request_membership', club_id=club.club_id) }}">
+                                        <button class="btn-primary" type="submit">Request Membership</button>
+                                    </form>
                                 {% endif %}
                             {% endif %}
                         </div>
                     </article>
                     {% endfor %}
+                </div>
+            </section>
+
+            <!-- Followed clubs section -->
+            <section class="section" id="followed-clubs">
+                <div class="section-header">
+                    <div>
+                        <h2>Followed Clubs</h2>
+                        <p>Clubs you keep up with.</p>
+                    </div>
+                </div>
+                <div class="grid">
+                    {% for club in followed_clubs %}
+                    <article class="card">
+                        <div class="card-header">
+                            <h3>{{ club.name }}</h3>
+                            <span class="badge {{ club.club_type|lower }}">{{ club.club_type }}</span>
+                        </div>
+                        <p class="meta">Founded: {{ club.foundation_date }}</p>
+                        <form method="POST" action="{{ url_for('clubs.unfollow_club', club_id=club.club_id) }}">
+                            <button class="btn-outline" type="submit">Unfollow</button>
+                        </form>
+                    </article>
+                    {% endfor %}
+                    {% if followed_clubs|length == 0 %}
+                    <div class="empty-state">No followed clubs yet.</div>
+                    {% endif %}
                 </div>
             </section>
 
@@ -100,12 +149,22 @@
                         <p class="meta">{{ event.publish_date }} - {{ event.end_date }}</p>
                         <p class="meta">Venue: {{ event.venue_name }} (Capacity {{ event.capacity }})</p>
                         <div class="card-actions">
-                            <button class="btn-outline" type="button" {% if is_attending %}disabled{% endif %}>
-                                {% if is_attending %}Saved Locked{% else %}Save{% endif %}
-                            </button>
-                            <button class="btn-primary" type="button" {% if is_saved %}disabled{% endif %}>
-                                {% if is_saved %}Attend Locked{% else %}Attend{% endif %}
-                            </button>
+                            {% if is_attending %}
+                            <form method="POST" action="{{ url_for('events.cancel_attendance', event_id=event.event_id) }}">
+                                <button class="btn-outline" type="submit">Cancel Attendance</button>
+                            </form>
+                            {% elif is_saved %}
+                            <form method="POST" action="{{ url_for('events.unsave_event', event_id=event.event_id) }}">
+                                <button class="btn-outline" type="submit">Unsave</button>
+                            </form>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('events.save_event', event_id=event.event_id) }}">
+                                <button class="btn-outline" type="submit">Save</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('events.attend_event', event_id=event.event_id) }}">
+                                <button class="btn-primary" type="submit">Attend</button>
+                            </form>
+                            {% endif %}
                         </div>
                         {% if is_saved %}
                             <span class="hint">You saved this event. Attending is disabled.</span>
@@ -172,12 +231,44 @@
                     <div class="card">
                         <h3>Saved Events</h3>
                         <p class="meta">Track events you want to revisit.</p>
+                        {% if saved_events|length == 0 %}
                         <div class="empty-state">No saved events yet.</div>
+                        {% else %}
+                        <div class="mini-list">
+                            {% for event in saved_events %}
+                            <div class="mini-item">
+                                <div>
+                                    <strong>{{ event.name }}</strong>
+                                    <div class="meta">{{ event.club_name }} · {{ event.publish_date }} - {{ event.end_date }}</div>
+                                </div>
+                                <form method="POST" action="{{ url_for('events.unsave_event', event_id=event.event_id) }}">
+                                    <button class="btn-outline" type="submit">Unsave</button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="card">
                         <h3>Attending Events</h3>
                         <p class="meta">Events you are committed to attend.</p>
+                        {% if attended_events|length == 0 %}
                         <div class="empty-state">No attending events yet.</div>
+                        {% else %}
+                        <div class="mini-list">
+                            {% for event in attended_events %}
+                            <div class="mini-item">
+                                <div>
+                                    <strong>{{ event.name }}</strong>
+                                    <div class="meta">{{ event.club_name }} · {{ event.publish_date }} - {{ event.end_date }}</div>
+                                </div>
+                                <form method="POST" action="{{ url_for('events.cancel_attendance', event_id=event.event_id) }}">
+                                    <button class="btn-outline" type="submit">Cancel</button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </section>

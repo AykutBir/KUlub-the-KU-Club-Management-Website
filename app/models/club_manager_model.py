@@ -192,6 +192,27 @@ class ClubManager:
 
             user_id = row[0]
 
+            # Ensure club is STANDARD and user is eligible to join
+            cursor.execute(
+                "SELECT club_type FROM clubs WHERE club_id = %s",
+                (club_id,),
+            )
+            club_row = cursor.fetchone()
+            if not club_row:
+                return False, "Club not found"
+            if club_row[0] == 'OFFICIAL':
+                return False, "Official clubs cannot approve membership requests"
+
+            cursor.execute(
+                "SELECT role FROM users WHERE user_id = %s",
+                (user_id,),
+            )
+            role_row = cursor.fetchone()
+            if not role_row:
+                return False, "User not found"
+            if role_row[0] != 'BASIC':
+                return False, "Only basic users can become club members"
+
             # Check if user is already a member of any club
             cursor.execute(
                 "SELECT club_id FROM club_members WHERE user_id = %s",

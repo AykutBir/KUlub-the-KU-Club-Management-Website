@@ -28,11 +28,14 @@ def user_dashboard():
         request['club_id']: request['status'] for request in membership_requests
     }
 
-    events = Event.get_upcoming_events()
+    followed_clubs = Club.get_followed_clubs(user_id)
+    followed_club_ids = {club['club_id'] for club in followed_clubs}
 
-    # TODO: Replace with saved/attended event lookups once tables exist.
-    saved_event_ids = set()
-    attending_event_ids = set()
+    events = Event.get_upcoming_events()
+    saved_events = Event.get_user_saved_events(user_id)
+    attended_events = Event.get_user_attended_events(user_id)
+    saved_event_ids = {event['event_id'] for event in saved_events}
+    attending_event_ids = {event['event_id'] for event in attended_events}
 
     return render_template(
         'basic_dashboard.html',
@@ -42,7 +45,11 @@ def user_dashboard():
         user_club=user_club,
         membership_requests=membership_requests,
         membership_status_by_club=membership_status_by_club,
+        followed_clubs=followed_clubs,
+        followed_club_ids=followed_club_ids,
         events=events,
+        saved_events=saved_events,
+        attended_events=attended_events,
         saved_event_ids=saved_event_ids,
         attending_event_ids=attending_event_ids,
     )

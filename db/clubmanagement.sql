@@ -74,6 +74,36 @@ CREATE TABLE membership_requests (
   FOREIGN KEY (club_id) REFERENCES clubs(club_id)
 );
 
+-- Club Followers
+CREATE TABLE club_followers (
+  user_id INT NOT NULL,
+  club_id INT NOT NULL,
+  followed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, club_id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON DELETE CASCADE
+);
+
+-- Event Saves
+CREATE TABLE event_saves (
+  user_id INT NOT NULL,
+  event_id INT NOT NULL,
+  saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, event_id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
+);
+
+-- Event Attendance
+CREATE TABLE event_attendance (
+  user_id INT NOT NULL,
+  event_id INT NOT NULL,
+  attended_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, event_id),
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
+);
+
 -- User Credentials
 CREATE TABLE user_credentials (
   email VARCHAR(255) PRIMARY KEY,
@@ -82,6 +112,91 @@ CREATE TABLE user_credentials (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
 );
+
+-- Enforce mutual exclusivity between event_saves and event_attendance
+--due to our rule: Event Interaction: A user can either save an event or attend an event, but never both.
+DELIMITER $$
+CREATE TRIGGER trg_block_save_if_attending
+BEFORE INSERT ON event_saves
+FOR EACH ROW
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM event_attendance
+    WHERE user_id = NEW.user_id AND event_id = NEW.event_id
+  ) THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Cannot save an event you are attending.';
+  END IF;
+END$$
+
+CREATE TRIGGER trg_block_attend_if_saved
+BEFORE INSERT ON event_attendance
+FOR EACH ROW
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM event_saves
+    WHERE user_id = NEW.user_id AND event_id = NEW.event_id
+  ) THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Cannot attend an event you have saved.';
+  END IF;
+END$$
+
+--Membership Limit: A basic user can be a member of only one club at a time.
+-- Official clubs Limit: no membership requests
+CREATE TRIGGER trg_block_official_membership_request
+BEFORE INSERT ON membership_requests
+FOR EACH ROW
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM clubs
+    WHERE club_id = NEW.club_id AND club_type = 'OFFICIAL'
+  ) THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Official clubs do not accept membership requests.';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM club_members
+    WHERE user_id = NEW.user_id
+  ) THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'User is already a member of a club.';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM membership_requests
+    WHERE user_id = NEW.user_id AND status = 'PENDING'
+  ) THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'User already has a pending membership request.';
+  END IF;
+END$$
+
+CREATE TRIGGER trg_block_approve_if_member_or_official
+BEFORE UPDATE ON membership_requests
+FOR EACH ROW
+BEGIN
+  IF NEW.status = 'APPROVED' AND OLD.status <> 'APPROVED' THEN
+    IF EXISTS (
+      SELECT 1 FROM club_members
+      WHERE user_id = NEW.user_id
+    ) THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'User is already a member of a club.';
+    END IF;
+
+    IF EXISTS (
+      SELECT 1 FROM clubs
+      WHERE club_id = NEW.club_id AND club_type = 'OFFICIAL'
+    ) THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Official clubs cannot approve membership requests.';
+    END IF;
+  END IF;
+END$$
+DELIMITER ;
+
 
 -- Event Modifications
 CREATE TABLE event_modifications (
