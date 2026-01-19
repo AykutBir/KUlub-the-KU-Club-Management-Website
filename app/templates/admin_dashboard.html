@@ -23,7 +23,8 @@
             <nav class="nav-links">
                 <a href="#overview" class="nav-link">Overview</a>
                 <a href="#users" class="nav-link">User Management</a>
-                <a href="#clubs" class="nav-link">Club Approvals</a>
+                <a href="#clubs" class="nav-link">Club Management</a>
+                <a href="#budget" class="nav-link">Budget Management</a>
                 <a href="#events" class="nav-link">Event Management</a>
                 <a href="#reports" class="nav-link">Reports</a>
             </nav>
@@ -41,19 +42,19 @@
                 <div class="grid">
                     <article class="card">
                         <h3>Total Users</h3>
-                        <p class="meta">Placeholder: 1,248</p>
+                        <p class="meta">{{ total_users }}</p>
                     </article>
                     <article class="card">
                         <h3>Active Clubs</h3>
-                        <p class="meta">Placeholder: 42</p>
+                        <p class="meta">{{ active_clubs }}</p>
                     </article>
                     <article class="card">
                         <h3>Upcoming Events</h3>
-                        <p class="meta">Placeholder: 16</p>
+                        <p class="meta">{{ upcoming_events }}</p>
                     </article>
                     <article class="card">
-                        <h3>Pending Approvals</h3>
-                        <p class="meta">Placeholder: 7 clubs/events</p>
+                        <h3>Number of Club Members</h3>
+                        <p class="meta">{{ club_membered_users }}</p>
                     </article>
                 </div>
                 <div class="banner">
@@ -67,38 +68,53 @@
                         <h2>User Management</h2>
                         <p>Review users, roles, and access levels.</p>
                     </div>
-                    <button class="btn-primary" type="button">Add New User</button>
+                    <button class="btn-primary" type="button" id="addUserButton">Add New User</button>
                 </div>
 
                 <div class="card">
                     <div class="card-header">
                         <h3>Registered Users</h3>
-                        <span class="pill">Placeholder</span>
                     </div>
-                    <div class="request-list">
-                        <div class="request-item">
-                            <span>Selin Kaya - BASIC</span>
-                            <span class="status approved">Active</span>
+                    <div class="profile-card" style="margin-bottom: 1rem;">
+                        <div class="profile-row">
+                            <label>Role</label>
+                            <select id="searchRole" style="width: 100%; padding: 0.5rem;">
+                                <option value="">All Roles</option>
+                                <option value="BASIC">BASIC</option>
+                                <option value="CLUB_ADMIN">CLUB_ADMIN</option>
+                                <option value="SYSTEM_ADMIN">SYSTEM_ADMIN</option>
+                            </select>
                         </div>
-                        <div class="request-item">
-                            <span>Ahmet Demir - CLUB_ADMIN</span>
-                            <span class="status pending">Pending Role</span>
+                        <div class="profile-row">
+                            <label>Name</label>
+                            <input type="text" id="searchName" placeholder="Enter name to search" style="width: 100%; padding: 0.5rem;">
                         </div>
-                        <div class="request-item">
-                            <span>Elif Yilmaz - SYSTEM_ADMIN</span>
-                            <span class="status approved">Active</span>
+                        <div class="profile-row">
+                            <label>Member/Managed Club Name</label>
+                            <input type="text" id="searchClubName" placeholder="Enter club name" style="width: 100%; padding: 0.5rem;">
                         </div>
+                        <div class="card-actions">
+                            <button class="btn-primary" type="button" id="searchButton">Search</button>
+                        </div>
+                    </div>
+                    <div class="request-list" id="userListContainer">
+                        <div class="request-item">
+                            <span>Loading users...</span>
+                        </div>
+                    </div>
+                    <div id="paginationContainer" style="margin-top: 1rem; text-align: center; display: none;">
+                        <div id="paginationButtons"></div>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-header">
                         <h3>Role Actions</h3>
-                        <span class="pill">Placeholder</span>
                     </div>
                     <div class="card-actions">
-                        <button class="btn-primary" type="button">Promote to Club Admin</button>
-                        <button class="btn-outline" type="button">Revoke Club Admin</button>
-                        <button class="btn-outline" type="button">Promote to System Admin</button>
+                        <button class="btn-primary" type="button" id="promoteClubAdminButton">Promote to Club Admin</button>
+                        <button class="btn-outline" type="button" id="revokeClubAdminButton">Revoke Club Admin</button>
+                        <button class="btn-outline" type="button" id="promoteSystemAdminButton">Promote to System Admin</button>
+                        <button class="btn-outline" type="button" id="revokeSystemAdminButton">Revoke System Admin</button>
                     </div>
                     <p class="meta">Use for assigning/removing admin privileges.</p>
                 </div>
@@ -107,62 +123,92 @@
             <section class="section" id="clubs">
                 <div class="section-header">
                     <div>
-                        <h2>Club Approvals</h2>
-                        <p>Approve or reject new club applications.</p>
+                        <h2>Club Management</h2>
+                        <p>Create new clubs and assign administrators.</p>
                     </div>
-                </div>
-
-                <div class="grid">
-                    <article class="card">
-                        <div class="card-header">
-                            <h3>Robotics Society</h3>
-                            <span class="badge official">Official</span>
-                        </div>
-                        <p class="meta">Founder: Ece Tan | Applied: 2024-03-10</p>
-                        <div class="card-actions">
-                            <button class="btn-primary" type="button">Approve</button>
-                            <button class="btn-outline" type="button">Reject</button>
-                        </div>
-                    </article>
-                    <article class="card">
-                        <div class="card-header">
-                            <h3>Photography Guild</h3>
-                            <span class="badge standard">Standard</span>
-                        </div>
-                        <p class="meta">Founder: Can Aksoy | Applied: 2024-03-12</p>
-                        <div class="card-actions">
-                            <button class="btn-primary" type="button">Approve</button>
-                            <button class="btn-outline" type="button">Reject</button>
-                        </div>
-                    </article>
                 </div>
 
                 <div class="card">
                     <div class="card-header">
                         <h3>Create Club & Assign Admin</h3>
-                        <span class="pill">Placeholder</span>
                     </div>
                     <div class="profile-card">
                         <div class="profile-row">
-                            <label>Club Name</label>
-                            <input type="text" value="Placeholder Club" readonly>
+                            <label>Club Name *</label>
+                            <input type="text" id="clubName" required placeholder="Enter club name">
                         </div>
                         <div class="profile-row">
-                            <label>Foundation Date</label>
-                            <input type="text" value="2024-03-15" readonly>
+                            <label>Foundation Date *</label>
+                            <input type="date" id="foundationDate" required>
                         </div>
                         <div class="profile-row">
-                            <label>Assign Club Admin</label>
-                            <input type="text" value="user@ku.edu.tr" readonly>
+                            <label>Club Type *</label>
+                            <select id="clubType" required style="width: 100%; padding: 0.5rem;">
+                                <option value="">-- Select Type --</option>
+                                <option value="STANDARD">STANDARD</option>
+                                <option value="OFFICIAL">OFFICIAL</option>
+                            </select>
+                        </div>
+                        <div class="profile-row">
+                            <label>Assign Club Admin *</label>
+                            <div style="position: relative;">
+                                <input type="text" id="adminSearch" placeholder="Search basic users by name..." style="width: 100%; padding: 0.5rem;" autocomplete="off">
+                                <select id="adminUserId" required style="width: 100%; padding: 0.5rem; margin-top: 0.5rem; display: none;">
+                                    <option value="">-- Select User --</option>
+                                </select>
+                                <div id="userDropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ccc; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 1000; margin-top: 0.25rem;"></div>
+                            </div>
                         </div>
                         <div class="profile-row">
                             <label>Initial Budget</label>
-                            <input type="text" value="₺15,000" readonly>
+                            <input type="number" id="initialBudget" min="0" step="0.01" placeholder="0.00" value="0">
                         </div>
                     </div>
                     <div class="card-actions">
-                        <button class="btn-primary" type="button">Create Club</button>
-                        <button class="btn-outline" type="button">Clear Draft</button>
+                        <button class="btn-primary" type="button" id="createClubButton">Create Club</button>
+                        <button class="btn-outline" type="button" id="clearClubFormButton">Clear Form</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="budget">
+                <div class="section-header">
+                    <div>
+                        <h2>Budget Management</h2>
+                        <p>View and allocate budgets for all clubs.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Club Budget Summary</h3>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #ddd;">
+                                    <th style="padding: 0.75rem; text-align: left;">Club Name</th>
+                                    <th style="padding: 0.75rem; text-align: right; cursor: pointer;" onclick="sortBudgetTable('current_budget')">
+                                        Current Budget
+                                        <span id="sortCurrentBudget" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span>
+                                    </th>
+                                    <th style="padding: 0.75rem; text-align: right; cursor: pointer;" onclick="sortBudgetTable('total_spent')">
+                                        Total Spent
+                                        <span id="sortTotalSpent" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span>
+                                    </th>
+                                    <th style="padding: 0.75rem; text-align: right; cursor: pointer;" onclick="sortBudgetTable('total_earned')">
+                                        Total Earned
+                                        <span id="sortTotalEarned" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span>
+                                    </th>
+                                    <th style="padding: 0.75rem; text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="budgetTableBody">
+                                <tr>
+                                    <td colspan="5" style="padding: 1rem; text-align: center;">Loading budget data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -173,48 +219,37 @@
                         <h2>Event Management</h2>
                         <p>Track pending and published events.</p>
                     </div>
-                    <button class="btn-primary" type="button">Create Event</button>
+                    <div>
+                        <button class="btn-outline" type="button" id="eventHistoryButton" style="margin-right: 0.5rem;">Event History</button>
+                        <button class="btn-outline" type="button" id="eventManagementHistoryButton">Event Management History</button>
+                    </div>
                 </div>
 
-                <div class="grid">
-                    <article class="card">
-                        <div class="card-header">
-                            <h3>AI Workshop</h3>
-                            <span class="pill">Pending</span>
-                        </div>
-                        <p class="meta">Hosted by Robotics Society | 2024-04-02</p>
-                        <div class="card-actions">
-                            <button class="btn-primary" type="button">Publish</button>
-                            <button class="btn-outline" type="button">Edit</button>
-                            <button class="btn-outline" type="button">Delete</button>
-                        </div>
-                    </article>
-                    <article class="card">
-                        <div class="card-header">
-                            <h3>Campus Photo Walk</h3>
-                            <span class="pill">Live</span>
-                        </div>
-                        <p class="meta">Hosted by Photography Guild | 2024-04-05</p>
-                        <div class="card-actions">
-                            <button class="btn-outline" type="button">Edit</button>
-                            <button class="btn-outline" type="button">Delete</button>
-                        </div>
-                    </article>
-                </div>
                 <div class="card">
                     <div class="card-header">
-                        <h3>Moderation Queue</h3>
-                        <span class="pill">Placeholder</span>
+                        <h3>Upcoming Events</h3>
                     </div>
-                    <div class="request-list">
-                        <div class="request-item">
-                            <span>Spring Concert - remove request</span>
-                            <span class="status pending">Review</span>
-                        </div>
-                        <div class="request-item">
-                            <span>Career Day - flagged content</span>
-                            <span class="status pending">Review</span>
-                        </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #ddd;">
+                                    <th style="padding: 0.75rem; text-align: left;">Event Name</th>
+                                    <th style="padding: 0.75rem; text-align: left;">Club Name</th>
+                                    <th style="padding: 0.75rem; text-align: left;">Venue</th>
+                                    <th style="padding: 0.75rem; text-align: left;">Publish Date</th>
+                                    <th style="padding: 0.75rem; text-align: left;">End Date</th>
+                                    <th style="padding: 0.75rem; text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventsTableBody">
+                                <tr>
+                                    <td colspan="6" style="padding: 1rem; text-align: center;">Loading events...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="eventsPaginationContainer" style="margin-top: 1rem; text-align: center; display: none;">
+                        <div id="eventsPaginationButtons"></div>
                     </div>
                 </div>
             </section>
@@ -266,8 +301,10 @@
     </div>
 
     <script>
-        const logoutButton = document.getElementById('logoutButton');
+        let currentPage = 1;
+        let currentSearchParams = {};
 
+        const logoutButton = document.getElementById('logoutButton');
         if (logoutButton) {
             logoutButton.addEventListener('click', async () => {
                 try {
@@ -278,6 +315,1149 @@
                     window.location.href = '/login';
                 }
             });
+        }
+
+        // Search functionality
+        const searchButton = document.getElementById('searchButton');
+        if (searchButton) {
+            searchButton.addEventListener('click', () => {
+                currentPage = 1;
+                performSearch();
+            });
+        }
+
+        async function performSearch() {
+            const role = document.getElementById('searchRole').value.trim() || null;
+            const name = document.getElementById('searchName').value.trim() || null;
+            const clubName = document.getElementById('searchClubName').value.trim() || null;
+
+            currentSearchParams = { role, name, club_name: clubName, page: currentPage };
+
+            try {
+                const response = await fetch('/admin/users/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentSearchParams)
+                });
+                const result = await response.json();
+                if (result.success && result.data) {
+                    displayUsers(result.data.users || []);
+                    displayPagination(result.data.total_pages || 0, result.data.current_page || 1);
+                } else {
+                    alert(result.message || 'Search failed');
+                }
+            } catch (error) {
+                console.error('Error searching users:', error);
+                alert('Error searching users');
+            }
+        }
+
+        function displayUsers(users) {
+            const userListContainer = document.getElementById('userListContainer');
+            if (!userListContainer) return;
+
+            userListContainer.innerHTML = '';
+            if (users.length === 0) {
+                userListContainer.innerHTML = '<div class="request-item"><span>No users found</span></div>';
+                return;
+            }
+
+            users.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'request-item';
+                item.innerHTML = `
+                    <span>${user.name} - ${user.role}${user.club_name ? ' (' + user.club_name + ')' : ''}</span>
+                `;
+                userListContainer.appendChild(item);
+            });
+        }
+
+        function displayPagination(totalPages, currentPageNum) {
+            const paginationContainer = document.getElementById('paginationContainer');
+            const paginationButtons = document.getElementById('paginationButtons');
+            if (!paginationContainer || !paginationButtons) return;
+
+            if (totalPages <= 1) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+
+            paginationContainer.style.display = 'block';
+            paginationButtons.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.className = i === currentPageNum ? 'btn-primary' : 'btn-outline';
+                button.style.margin = '0 0.25rem';
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    performSearch();
+                });
+                paginationButtons.appendChild(button);
+            }
+        }
+
+        // Popup management
+        function showPopup(title, content) {
+            const popup = document.createElement('div');
+            popup.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+            popup.innerHTML = `
+                <div style="background:white;padding:2rem;border-radius:8px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;">
+                    <h2 style="margin-top:0;">${title}</h2>
+                    ${content}
+                    <div style="margin-top:1rem;text-align:right;">
+                        <button class="btn-outline" id="popupCancel" style="margin-right:0.5rem;">Cancel</button>
+                        <button class="btn-primary" id="popupSubmit">Submit</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(popup);
+            return popup;
+        }
+
+        function closePopup(popup) {
+            if (popup && popup.parentNode) {
+                popup.parentNode.removeChild(popup);
+            }
+        }
+
+        // Add New User button
+        document.getElementById('addUserButton').addEventListener('click', () => {
+            const popup = showPopup('Add New User', `
+                <div class="profile-card">
+                    <div class="profile-row">
+                        <label>First Name *</label>
+                        <input type="text" id="popupFirstName" required>
+                    </div>
+                    <div class="profile-row">
+                        <label>Last Name *</label>
+                        <input type="text" id="popupLastName" required>
+                    </div>
+                    <div class="profile-row">
+                        <label>Email *</label>
+                        <input type="email" id="popupEmail" required>
+                    </div>
+                    <div class="profile-row">
+                        <label>Birthdate * (YYYY-MM-DD)</label>
+                        <input type="date" id="popupBirthdate" required>
+                    </div>
+                    <div class="profile-row">
+                        <label>Password * (min 8 characters)</label>
+                        <input type="password" id="popupPassword" required>
+                    </div>
+                </div>
+            `);
+            document.getElementById('popupSubmit').addEventListener('click', async () => {
+                const data = {
+                    firstName: document.getElementById('popupFirstName').value.trim(),
+                    lastName: document.getElementById('popupLastName').value.trim(),
+                    email: document.getElementById('popupEmail').value.trim(),
+                    birthdate: document.getElementById('popupBirthdate').value,
+                    password: document.getElementById('popupPassword').value
+                };
+                if (!data.firstName || !data.lastName || !data.email || !data.birthdate || !data.password) {
+                    alert('All fields are required');
+                    return;
+                }
+                try {
+                    const response = await fetch('/admin/users/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('User created successfully');
+                        closePopup(popup);
+                        performSearch();
+                    } else {
+                        alert(result.message || 'Failed to create user');
+                    }
+                } catch (error) {
+                    alert('Error creating user');
+                }
+            });
+            document.getElementById('popupCancel').addEventListener('click', () => closePopup(popup));
+        });
+
+        // Promote Club Admin button
+        document.getElementById('promoteClubAdminButton').addEventListener('click', async () => {
+            try {
+                const [clubsRes, usersRes] = await Promise.all([
+                    fetch('/admin/clubs'),
+                    fetch('/admin/users/basic')
+                ]);
+                const clubsData = await clubsRes.json();
+                const usersData = await usersRes.json();
+                if (!clubsData.success || !usersData.success) {
+                    alert('Failed to load data');
+                    return;
+                }
+                const clubs = clubsData.data.filter(c => !c.admin_user_id);
+                const users = usersData.data;
+                if (clubs.length === 0) {
+                    alert('No clubs available without an admin');
+                    return;
+                }
+                if (users.length === 0) {
+                    alert('No basic users available');
+                    return;
+                }
+                const popup = showPopup('Promote to Club Admin', `
+                    <div class="profile-card">
+                        <div class="profile-row">
+                            <label>Select Club *</label>
+                            <select id="popupClubId" required>
+                                <option value="">-- Select Club --</option>
+                                ${clubs.map(c => `<option value="${c.club_id}">${c.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="profile-row">
+                            <label>Select Basic User *</label>
+                            <select id="popupUserId" required>
+                                <option value="">-- Select User --</option>
+                                ${users.map(u => `<option value="${u.user_id}">${u.name} (${u.email})</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `);
+                document.getElementById('popupSubmit').addEventListener('click', async () => {
+                    const clubId = document.getElementById('popupClubId').value;
+                    const userId = document.getElementById('popupUserId').value;
+                    if (!clubId || !userId) {
+                        alert('Please select both club and user');
+                        return;
+                    }
+                    try {
+                        const response = await fetch('/admin/users/promote-club-admin', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ club_id: parseInt(clubId), user_id: parseInt(userId) })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            alert('User promoted successfully');
+                            closePopup(popup);
+                            performSearch();
+                        } else {
+                            alert(result.message || 'Failed to promote user');
+                        }
+                    } catch (error) {
+                        alert('Error promoting user');
+                    }
+                });
+                document.getElementById('popupCancel').addEventListener('click', () => closePopup(popup));
+            } catch (error) {
+                alert('Error loading data');
+            }
+        });
+
+        // Revoke Club Admin button
+        document.getElementById('revokeClubAdminButton').addEventListener('click', async () => {
+            try {
+                const clubsRes = await fetch('/admin/clubs');
+                const clubsData = await clubsRes.json();
+                if (!clubsData.success) {
+                    alert('Failed to load clubs');
+                    return;
+                }
+                const clubsWithAdmins = clubsData.data.filter(c => c.admin_user_id);
+                if (clubsWithAdmins.length === 0) {
+                    alert('No clubs have admins');
+                    return;
+                }
+                const popup = showPopup('Revoke Club Admin', `
+                    <div class="profile-card">
+                        <div class="profile-row">
+                            <label>Select Club *</label>
+                            <select id="popupRevokeClubId" required>
+                                <option value="">-- Select Club --</option>
+                                ${clubsWithAdmins.map(c => `<option value="${c.club_id}" data-user-id="${c.admin_user_id}">${c.name} (Admin: ${c.admin_name || 'Unknown'})</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `);
+                document.getElementById('popupSubmit').addEventListener('click', async () => {
+                    const clubSelect = document.getElementById('popupRevokeClubId');
+                    const clubId = clubSelect.value;
+                    const userId = clubSelect.selectedOptions[0]?.dataset.userId;
+                    if (!clubId || !userId) {
+                        alert('Please select a club');
+                        return;
+                    }
+                    try {
+                        const response = await fetch('/admin/users/revoke-club-admin', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ club_id: parseInt(clubId), user_id: parseInt(userId) })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            alert('Club admin revoked successfully');
+                            closePopup(popup);
+                            performSearch();
+                        } else {
+                            alert(result.message || 'Failed to revoke club admin');
+                        }
+                    } catch (error) {
+                        alert('Error revoking club admin');
+                    }
+                });
+                document.getElementById('popupCancel').addEventListener('click', () => closePopup(popup));
+            } catch (error) {
+                alert('Error loading clubs');
+            }
+        });
+
+        // Promote to System Admin button
+        document.getElementById('promoteSystemAdminButton').addEventListener('click', async () => {
+            try {
+                const usersRes = await fetch('/admin/users/basic');
+                const usersData = await usersRes.json();
+                if (!usersData.success) {
+                    alert('Failed to load users');
+                    return;
+                }
+                const users = usersData.data;
+                if (users.length === 0) {
+                    alert('No basic users available');
+                    return;
+                }
+                const popup = showPopup('Promote to System Admin', `
+                    <div class="profile-card">
+                        <div class="profile-row">
+                            <label>Select User *</label>
+                            <select id="popupSystemUserId" required>
+                                <option value="">-- Select User --</option>
+                                ${users.map(u => `<option value="${u.user_id}">${u.name} (${u.email})</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `);
+                document.getElementById('popupSubmit').addEventListener('click', async () => {
+                    const userId = document.getElementById('popupSystemUserId').value;
+                    if (!userId) {
+                        alert('Please select a user');
+                        return;
+                    }
+                    try {
+                        const response = await fetch('/admin/users/promote-system-admin', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_id: parseInt(userId) })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            alert('User promoted to system admin successfully');
+                            closePopup(popup);
+                            performSearch();
+                        } else {
+                            alert(result.message || 'Failed to promote user');
+                        }
+                    } catch (error) {
+                        alert('Error promoting user');
+                    }
+                });
+                document.getElementById('popupCancel').addEventListener('click', () => closePopup(popup));
+            } catch (error) {
+                alert('Error loading users');
+            }
+        });
+
+        // Revoke System Admin button
+        document.getElementById('revokeSystemAdminButton').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/admin/users/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role: 'SYSTEM_ADMIN', page: 1 })
+                });
+                const result = await response.json();
+                if (!result.success || !result.data || result.data.users.length === 0) {
+                    alert('No system admins found');
+                    return;
+                }
+                const admins = result.data.users;
+                const popup = showPopup('Revoke System Admin', `
+                    <div class="profile-card">
+                        <div class="profile-row">
+                            <label>Select System Admin *</label>
+                            <select id="popupRevokeSystemUserId" required>
+                                <option value="">-- Select System Admin --</option>
+                                ${admins.map(u => `<option value="${u.user_id}">${u.name} (${u.email})</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `);
+                document.getElementById('popupSubmit').addEventListener('click', async () => {
+                    const userId = document.getElementById('popupRevokeSystemUserId').value;
+                    if (!userId) {
+                        alert('Please select a system admin');
+                        return;
+                    }
+                    try {
+                        const response = await fetch('/admin/users/revoke-system-admin', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_id: parseInt(userId) })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            alert('System admin revoked successfully');
+                            closePopup(popup);
+                            performSearch();
+                        } else {
+                            alert(result.message || 'Failed to revoke system admin');
+                        }
+                    } catch (error) {
+                        alert('Error revoking system admin');
+                    }
+                });
+                document.getElementById('popupCancel').addEventListener('click', () => closePopup(popup));
+            } catch (error) {
+                alert('Error loading system admins');
+            }
+        });
+
+        // Load users on page load (initial search with no filters)
+        performSearch();
+
+        // Create Club Form Functionality
+        let allBasicUsers = [];
+        let selectedUserId = null;
+
+        // Load basic users for admin assignment
+        async function loadBasicUsers() {
+            try {
+                const response = await fetch('/admin/users/basic');
+                const result = await response.json();
+                if (result.success && result.data) {
+                    allBasicUsers = result.data;
+                    updateUserDropdown('');
+                } else {
+                    console.error('Failed to load basic users');
+                }
+            } catch (error) {
+                console.error('Error loading basic users:', error);
+            }
+        }
+
+        // Update user dropdown based on search
+        function updateUserDropdown(searchTerm) {
+            const dropdown = document.getElementById('userDropdown');
+            const adminSearch = document.getElementById('adminSearch');
+            const adminUserId = document.getElementById('adminUserId');
+            
+            if (!dropdown || !adminSearch) return;
+
+            const filtered = allBasicUsers.filter(user => 
+                user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (searchTerm === '' || filtered.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            dropdown.innerHTML = '';
+            filtered.forEach(user => {
+                const item = document.createElement('div');
+                item.style.cssText = 'padding: 0.5rem; cursor: pointer; border-bottom: 1px solid #eee;';
+                item.textContent = `${user.name} (${user.email})`;
+                item.addEventListener('click', () => {
+                    adminSearch.value = `${user.name} (${user.email})`;
+                    selectedUserId = user.user_id;
+                    adminUserId.value = user.user_id;
+                    dropdown.style.display = 'none';
+                });
+                item.addEventListener('mouseenter', () => {
+                    item.style.backgroundColor = '#f0f0f0';
+                });
+                item.addEventListener('mouseleave', () => {
+                    item.style.backgroundColor = 'white';
+                });
+                dropdown.appendChild(item);
+            });
+            dropdown.style.display = 'block';
+        }
+
+        // Admin search input handler
+        const adminSearch = document.getElementById('adminSearch');
+        if (adminSearch) {
+            adminSearch.addEventListener('input', (e) => {
+                updateUserDropdown(e.target.value);
+            });
+            adminSearch.addEventListener('blur', () => {
+                // Hide dropdown after a short delay to allow click events
+                setTimeout(() => {
+                    const dropdown = document.getElementById('userDropdown');
+                    if (dropdown) dropdown.style.display = 'none';
+                }, 200);
+            });
+        }
+
+        // Create Club button handler
+        const createClubButton = document.getElementById('createClubButton');
+        if (createClubButton) {
+            createClubButton.addEventListener('click', async () => {
+                const name = document.getElementById('clubName').value.trim();
+                const foundationDate = document.getElementById('foundationDate').value;
+                const clubType = document.getElementById('clubType').value;
+                const adminUserId = document.getElementById('adminUserId').value || selectedUserId;
+                const initialBudget = parseFloat(document.getElementById('initialBudget').value) || 0;
+
+                // Validation
+                if (!name) {
+                    alert('Club name is required');
+                    return;
+                }
+                if (!foundationDate) {
+                    alert('Foundation date is required');
+                    return;
+                }
+                if (!clubType) {
+                    alert('Club type is required');
+                    return;
+                }
+                if (!adminUserId) {
+                    alert('Please select a club admin');
+                    return;
+                }
+                if (initialBudget < 0) {
+                    alert('Initial budget must be non-negative');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/admin/clubs/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: name,
+                            foundation_date: foundationDate,
+                            club_type: clubType,
+                            admin_user_id: parseInt(adminUserId),
+                            initial_budget: initialBudget
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Club created successfully');
+                        // Clear form
+                        document.getElementById('clubName').value = '';
+                        document.getElementById('foundationDate').value = '';
+                        document.getElementById('clubType').value = '';
+                        document.getElementById('adminSearch').value = '';
+                        document.getElementById('adminUserId').value = '';
+                        document.getElementById('initialBudget').value = '0';
+                        selectedUserId = null;
+                    } else {
+                        alert(result.message || 'Failed to create club');
+                    }
+                } catch (error) {
+                    console.error('Error creating club:', error);
+                    alert('Error creating club');
+                }
+            });
+        }
+
+        // Clear form button handler
+        const clearClubFormButton = document.getElementById('clearClubFormButton');
+        if (clearClubFormButton) {
+            clearClubFormButton.addEventListener('click', () => {
+                document.getElementById('clubName').value = '';
+                document.getElementById('foundationDate').value = '';
+                document.getElementById('clubType').value = '';
+                document.getElementById('adminSearch').value = '';
+                document.getElementById('adminUserId').value = '';
+                document.getElementById('initialBudget').value = '0';
+                selectedUserId = null;
+            });
+        }
+
+        // Load basic users on page load
+        loadBasicUsers();
+
+        // Budget Management Functionality
+        let budgetData = [];
+        let currentSortColumn = null;
+        let currentSortDirection = null; // 'asc' or 'desc'
+
+        async function loadBudgetSummary() {
+            const tbody = document.getElementById('budgetTableBody');
+            if (!tbody) return;
+
+            try {
+                const response = await fetch('/admin/budget/summary');
+                const result = await response.json();
+                if (result.success && result.data) {
+                    budgetData = result.data;
+                    // If there's an active sort, apply it; otherwise just display
+                    if (currentSortColumn) {
+                        applySort();
+                    } else {
+                        displayBudgetSummary(budgetData);
+                    }
+                } else {
+                    budgetData = [];
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 1rem; text-align: center;">Failed to load budget data</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading budget summary:', error);
+                budgetData = [];
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 1rem; text-align: center;">Error loading budget data</td></tr>';
+            }
+        }
+
+        function sortBudgetTable(column) {
+            // Toggle sort direction if clicking the same column
+            if (currentSortColumn === column) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                currentSortDirection = 'asc';
+            }
+
+            applySort();
+        }
+
+        function applySort() {
+            if (!currentSortColumn || budgetData.length === 0) {
+                displayBudgetSummary(budgetData);
+                return;
+            }
+
+            // Sort the data
+            const sortedData = [...budgetData].sort((a, b) => {
+                let aVal = a[currentSortColumn];
+                let bVal = b[currentSortColumn];
+                
+                if (currentSortDirection === 'asc') {
+                    return aVal - bVal;
+                } else {
+                    return bVal - aVal;
+                }
+            });
+
+            // Update sort indicators
+            updateSortIndicators(currentSortColumn, currentSortDirection);
+
+            // Display sorted data
+            displayBudgetSummary(sortedData);
+        }
+
+        function updateSortIndicators(activeColumn, direction) {
+            // Reset all indicators
+            const indicators = {
+                'current_budget': document.getElementById('sortCurrentBudget'),
+                'total_spent': document.getElementById('sortTotalSpent'),
+                'total_earned': document.getElementById('sortTotalEarned')
+            };
+
+            Object.keys(indicators).forEach(col => {
+                if (indicators[col]) {
+                    if (col === activeColumn) {
+                        indicators[col].textContent = direction === 'asc' ? '↑' : '↓';
+                        indicators[col].style.color = '#007bff';
+                    } else {
+                        indicators[col].textContent = '↕';
+                        indicators[col].style.color = '#666';
+                    }
+                }
+            });
+        }
+
+        function displayBudgetSummary(summary) {
+            const tbody = document.getElementById('budgetTableBody');
+            if (!tbody) return;
+
+            if (summary.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 1rem; text-align: center;">No clubs found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            summary.forEach(club => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #eee';
+                row.innerHTML = `
+                    <td style="padding: 0.75rem;">${club.name}</td>
+                    <td style="padding: 0.75rem; text-align: right;">₺${club.current_budget.toFixed(2)}</td>
+                    <td style="padding: 0.75rem; text-align: right;">₺${club.total_spent.toFixed(2)}</td>
+                    <td style="padding: 0.75rem; text-align: right;">₺${club.total_earned.toFixed(2)}</td>
+                    <td style="padding: 0.75rem; text-align: center;">
+                        <button class="btn-primary" type="button" data-club-id="${club.club_id}" data-club-name="${club.name}" onclick="openAllocateBudgetModal(${club.club_id}, '${club.name.replace(/'/g, "\\'")}')">Allocate Budget</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function openAllocateBudgetModal(clubId, clubName) {
+            const popup = showPopup(`Allocate Budget - ${clubName}`, `
+                <div class="profile-card">
+                    <div class="profile-row">
+                        <label>Amount * (₺)</label>
+                        <input type="number" id="allocateAmount" min="0.01" step="0.01" required placeholder="Enter amount">
+                    </div>
+                    <div class="profile-row">
+                        <label>Description</label>
+                        <input type="text" id="allocateDescription" placeholder="Optional description">
+                    </div>
+                </div>
+            `);
+            
+            const submitButton = document.getElementById('popupSubmit');
+            const cancelButton = document.getElementById('popupCancel');
+            
+            submitButton.addEventListener('click', async () => {
+                const amount = parseFloat(document.getElementById('allocateAmount').value);
+                const description = document.getElementById('allocateDescription').value.trim();
+
+                if (!amount || amount <= 0) {
+                    alert('Please enter a valid amount greater than 0');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/admin/budget/allocate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            club_id: clubId,
+                            amount: amount,
+                            description: description || null
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Budget allocated successfully');
+                        closePopup(popup);
+                        loadBudgetSummary(); // Refresh summary
+                    } else {
+                        alert(result.message || 'Failed to allocate budget');
+                    }
+                } catch (error) {
+                    console.error('Error allocating budget:', error);
+                    alert('Error allocating budget');
+                }
+            });
+            
+            cancelButton.addEventListener('click', () => closePopup(popup));
+        }
+
+        // Load budget summary when budget section is visible or on page load
+        const budgetSection = document.getElementById('budget');
+        if (budgetSection) {
+            // Use Intersection Observer to load when section becomes visible
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        loadBudgetSummary();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+            observer.observe(budgetSection);
+        }
+
+        // Event Management Functionality
+        let currentEventsPage = 1;
+        let allVenues = [];
+        let allClubs = [];
+
+        async function loadUpcomingEvents(page) {
+            const eventsTableBody = document.getElementById('eventsTableBody');
+            if (!eventsTableBody) return;
+
+            try {
+                const response = await fetch(`/admin/events/upcoming?page=${page}`);
+                const result = await response.json();
+                if (result.success && result.data) {
+                    displayEvents(result.data.events || []);
+                    displayEventsPagination(result.data.total_pages || 0, result.data.current_page || 1);
+                    currentEventsPage = result.data.current_page || 1;
+                } else {
+                    eventsTableBody.innerHTML = '<tr><td colspan="6" style="padding: 1rem; text-align: center;">Failed to load events</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading events:', error);
+                eventsTableBody.innerHTML = '<tr><td colspan="6" style="padding: 1rem; text-align: center;">Error loading events</td></tr>';
+            }
+        }
+
+        function displayEvents(events) {
+            const eventsTableBody = document.getElementById('eventsTableBody');
+            if (!eventsTableBody) return;
+
+            eventsTableBody.innerHTML = '';
+            if (events.length === 0) {
+                eventsTableBody.innerHTML = '<tr><td colspan="6" style="padding: 1rem; text-align: center;">No upcoming events found</td></tr>';
+                return;
+            }
+
+            events.forEach(event => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #eee';
+                row.innerHTML = `
+                    <td style="padding: 0.75rem;">${event.name}</td>
+                    <td style="padding: 0.75rem;">${event.club_name}</td>
+                    <td style="padding: 0.75rem;">${event.venue_name}</td>
+                    <td style="padding: 0.75rem;">${event.publish_date}</td>
+                    <td style="padding: 0.75rem;">${event.end_date}</td>
+                    <td style="padding: 0.75rem; text-align: center;">
+                        <button class="btn-primary" type="button" onclick="openManageEventModal(${event.event_id})">Manage Event</button>
+                    </td>
+                `;
+                eventsTableBody.appendChild(row);
+            });
+        }
+
+        function displayEventsPagination(totalPages, currentPageNum) {
+            const paginationContainer = document.getElementById('eventsPaginationContainer');
+            const paginationButtons = document.getElementById('eventsPaginationButtons');
+            if (!paginationContainer || !paginationButtons) return;
+
+            if (totalPages <= 1) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+
+            paginationContainer.style.display = 'block';
+            paginationButtons.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.className = i === currentPageNum ? 'btn-primary' : 'btn-outline';
+                button.style.margin = '0 0.25rem';
+                button.addEventListener('click', () => {
+                    currentEventsPage = i;
+                    loadUpcomingEvents(i);
+                });
+                paginationButtons.appendChild(button);
+            }
+        }
+
+        async function loadVenues() {
+            if (allVenues.length > 0) return allVenues;
+            try {
+                const response = await fetch('/admin/venues');
+                const result = await response.json();
+                if (result.success && result.data) {
+                    allVenues = result.data;
+                    return allVenues;
+                }
+                return [];
+            } catch (error) {
+                console.error('Error loading venues:', error);
+                return [];
+            }
+        }
+
+        async function loadClubs() {
+            if (allClubs.length > 0) return allClubs;
+            try {
+                const response = await fetch('/admin/clubs/all');
+                const result = await response.json();
+                if (result.success && result.data) {
+                    allClubs = result.data;
+                    return allClubs;
+                }
+                return [];
+            } catch (error) {
+                console.error('Error loading clubs:', error);
+                return [];
+            }
+        }
+
+        async function openManageEventModal(eventId) {
+            try {
+                // Load event details
+                const eventResponse = await fetch(`/admin/events/${eventId}`);
+                const eventResult = await eventResponse.json();
+                if (!eventResult.success || !eventResult.data) {
+                    alert('Failed to load event details');
+                    return;
+                }
+                const event = eventResult.data;
+
+                // Load venues and clubs
+                const [venues, clubs] = await Promise.all([loadVenues(), loadClubs()]);
+
+                // Create modal
+                const popup = showPopup('Manage Event', `
+                    <div class="profile-card">
+                        <div class="profile-row">
+                            <label>Event ID</label>
+                            <input type="text" id="popupEventId" value="${event.event_id}" readonly style="background-color: #f0f0f0;">
+                        </div>
+                        <div class="profile-row">
+                            <label>Event Name *</label>
+                            <input type="text" id="popupEventName" value="${event.name.replace(/"/g, '&quot;')}" required>
+                        </div>
+                        <div class="profile-row">
+                            <label>Description *</label>
+                            <textarea id="popupEventDescription" required style="width: 100%; padding: 0.5rem; min-height: 100px;">${event.description.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                        </div>
+                        <div class="profile-row">
+                            <label>Publish Date</label>
+                            <input type="text" id="popupPublishDate" value="${event.publish_date}" readonly style="background-color: #f0f0f0; width: 100%; padding: 0.5rem;">
+                        </div>
+                        <div class="profile-row">
+                            <label>End Date *</label>
+                            <input type="date" id="popupEndDate" value="${event.end_date}" required>
+                        </div>
+                        <div class="profile-row">
+                            <label>Venue *</label>
+                            <select id="popupVenueId" required style="width: 100%; padding: 0.5rem;">
+                                ${venues.map(v => `<option value="${v.venue_id}" ${v.venue_id === event.venue_id ? 'selected' : ''}>${v.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="profile-row">
+                            <label>Club *</label>
+                            <select id="popupClubId" required style="width: 100%; padding: 0.5rem;">
+                                ${clubs.map(c => `<option value="${c.club_id}" ${c.club_id === event.club_id ? 'selected' : ''}>${c.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="profile-row">
+                            <label>Modification Description (Optional)</label>
+                            <textarea id="popupModificationDescription" placeholder="Reason for update/delete" style="width: 100%; padding: 0.5rem; min-height: 60px;"></textarea>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                        <button class="btn-primary" id="popupUpdateButton" style="flex: 1;">Update Event</button>
+                        <button class="btn-outline" id="popupDeleteButton" style="flex: 1; background-color: #dc3545; color: white; border-color: #dc3545;">Delete Event</button>
+                    </div>
+                `);
+
+                // Update button handler
+                document.getElementById('popupUpdateButton').addEventListener('click', async () => {
+                    const name = document.getElementById('popupEventName').value.trim();
+                    const description = document.getElementById('popupEventDescription').value.trim();
+                    const endDate = document.getElementById('popupEndDate').value;
+                    const venueId = document.getElementById('popupVenueId').value;
+                    const clubId = document.getElementById('popupClubId').value;
+                    const modificationDescription = document.getElementById('popupModificationDescription').value.trim();
+
+                    if (!name || !description || !endDate || !venueId || !clubId) {
+                        alert('All required fields must be filled');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/admin/events/${eventId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                event_id: eventId,
+                                name: name,
+                                description: description,
+                                end_date: endDate,
+                                venue_id: parseInt(venueId),
+                                club_id: parseInt(clubId),
+                                modification_description: modificationDescription
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            alert('Event updated successfully');
+                            closePopup(popup);
+                            loadUpcomingEvents(currentEventsPage);
+                        } else {
+                            alert(result.message || 'Failed to update event');
+                        }
+                    } catch (error) {
+                        console.error('Error updating event:', error);
+                        alert('Error updating event');
+                    }
+                });
+
+                // Delete button handler
+                document.getElementById('popupDeleteButton').addEventListener('click', async () => {
+                    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+                        return;
+                    }
+
+                    const modificationDescription = document.getElementById('popupModificationDescription').value.trim();
+
+                    try {
+                        const response = await fetch(`/admin/events/${eventId}`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                description: modificationDescription
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            alert('Event deleted successfully');
+                            closePopup(popup);
+                            loadUpcomingEvents(currentEventsPage);
+                        } else {
+                            alert(result.message || 'Failed to delete event');
+                        }
+                    } catch (error) {
+                        console.error('Error deleting event:', error);
+                        alert('Error deleting event');
+                    }
+                });
+
+                // Cancel button handler
+                document.getElementById('popupCancel').addEventListener('click', () => closePopup(popup));
+            } catch (error) {
+                console.error('Error opening manage event modal:', error);
+                alert('Error loading event details');
+            }
+        }
+
+        // Event History button
+        document.getElementById('eventHistoryButton').addEventListener('click', async () => {
+            await openEventHistoryModal(1);
+        });
+
+        // Event Management History button
+        document.getElementById('eventManagementHistoryButton').addEventListener('click', async () => {
+            await openEventManagementHistoryModal(1);
+        });
+
+        async function openEventHistoryModal(page) {
+            try {
+                const response = await fetch(`/admin/events/finished?page=${page}`);
+                const result = await response.json();
+                if (!result.success || !result.data) {
+                    alert('Failed to load event history');
+                    return;
+                }
+
+                const data = result.data;
+                const events = data.events || [];
+                const totalPages = data.total_pages || 0;
+                const currentPage = data.current_page || 1;
+
+                let eventsHtml = '';
+                if (events.length === 0) {
+                    eventsHtml = '<div class="request-item"><span>No finished events found</span></div>';
+                } else {
+                    events.forEach(event => {
+                        eventsHtml += `
+                            <div class="request-item" style="padding: 0.75rem; border-bottom: 1px solid #eee;">
+                                <div><strong>${event.name}</strong> - ${event.club_name}</div>
+                                <div class="meta">Venue: ${event.venue_name} | End Date: ${event.end_date}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                let paginationHtml = '';
+                if (totalPages > 1) {
+                    paginationHtml = '<div style="margin-top: 1rem; text-align: center;">';
+                    for (let i = 1; i <= totalPages; i++) {
+                        paginationHtml += `<button class="${i === currentPage ? 'btn-primary' : 'btn-outline'}" type="button" style="margin: 0 0.25rem;" onclick="closePopup(currentEventHistoryPopup); openEventHistoryModal(${i})">${i}</button>`;
+                    }
+                    paginationHtml += '</div>';
+                }
+
+                const popup = document.createElement('div');
+                popup.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+                popup.innerHTML = `
+                    <div style="background:white;padding:2rem;border-radius:8px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;">
+                        <h2 style="margin-top:0;">Event History</h2>
+                        <div style="max-height: 60vh; overflow-y: auto;">
+                            ${eventsHtml}
+                        </div>
+                        ${paginationHtml}
+                        <div style="margin-top:1rem;text-align:right;">
+                            <button class="btn-outline" id="popupExit" type="button">Exit</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(popup);
+                window.currentEventHistoryPopup = popup;
+                document.getElementById('popupExit').addEventListener('click', () => closePopup(popup));
+            } catch (error) {
+                console.error('Error loading event history:', error);
+                alert('Error loading event history');
+            }
+        }
+
+        async function openEventManagementHistoryModal(page) {
+            try {
+                const response = await fetch(`/admin/events/modifications?page=${page}`);
+                const result = await response.json();
+                if (!result.success || !result.data) {
+                    alert('Failed to load event management history');
+                    return;
+                }
+
+                const data = result.data;
+                const modifications = data.modifications || [];
+                const totalPages = data.total_pages || 0;
+                const currentPage = data.current_page || 1;
+
+                let modificationsHtml = '';
+                if (modifications.length === 0) {
+                    modificationsHtml = '<div class="request-item"><span>No modifications found</span></div>';
+                } else {
+                    modifications.forEach(mod => {
+                        const modType = mod.modification_type === 'UPDATE' ? 'Update' : 'Delete';
+                        const description = mod.description ? ` - ${mod.description}` : '';
+                        modificationsHtml += `
+                            <div class="request-item" style="padding: 0.75rem; border-bottom: 1px solid #eee;">
+                                <div><strong>${mod.event_name}</strong> - ${mod.club_name} - ${mod.admin_name} - ${modType}${description}</div>
+                                <div class="meta">Date: ${new Date(mod.modification_date).toLocaleString()}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                let paginationHtml = '';
+                if (totalPages > 1) {
+                    paginationHtml = '<div style="margin-top: 1rem; text-align: center;">';
+                    for (let i = 1; i <= totalPages; i++) {
+                        paginationHtml += `<button class="${i === currentPage ? 'btn-primary' : 'btn-outline'}" type="button" style="margin: 0 0.25rem;" onclick="closePopup(currentEventManagementHistoryPopup); openEventManagementHistoryModal(${i})">${i}</button>`;
+                    }
+                    paginationHtml += '</div>';
+                }
+
+                const popup = document.createElement('div');
+                popup.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+                popup.innerHTML = `
+                    <div style="background:white;padding:2rem;border-radius:8px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;">
+                        <h2 style="margin-top:0;">Event Management History</h2>
+                        <div style="max-height: 60vh; overflow-y: auto;">
+                            ${modificationsHtml}
+                        </div>
+                        ${paginationHtml}
+                        <div style="margin-top:1rem;text-align:right;">
+                            <button class="btn-outline" id="popupExit" type="button">Exit</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(popup);
+                window.currentEventManagementHistoryPopup = popup;
+                document.getElementById('popupExit').addEventListener('click', () => closePopup(popup));
+            } catch (error) {
+                console.error('Error loading event management history:', error);
+                alert('Error loading event management history');
+            }
+        }
+
+        // Load events when events section is visible or on page load
+        const eventsSection = document.getElementById('events');
+        if (eventsSection) {
+            // Use Intersection Observer to load when section becomes visible
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        loadUpcomingEvents(1);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+            observer.observe(eventsSection);
         }
     </script>
 </body>

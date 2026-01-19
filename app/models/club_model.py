@@ -1,4 +1,5 @@
-from app.db import get_cursor
+from app.db import get_db, get_cursor
+from datetime import date
 
 
 class Club:
@@ -82,5 +83,237 @@ class Club:
                 }
                 for row in rows
             ]
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def get_club_admin(club_id):
+        """Get admin user for a club"""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT u.user_id, u.name, u.email, u.role
+                FROM clubs c
+                JOIN users u ON u.user_id = c.admin_user_id
+                WHERE c.club_id = %s AND c.admin_user_id IS NOT NULL
+                """,
+                (club_id,)
+            )
+            result = cursor.fetchone()
+            if result:
+                return {
+                    'user_id': result[0],
+                    'name': result[1],
+                    'email': result[2],
+                    'role': result[3]
+                }
+            return None
+        except Exception as e:
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def set_club_admin(club_id, user_id):
+        """Assign admin to club"""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                "UPDATE clubs SET admin_user_id = %s WHERE club_id = %s",
+                (user_id, club_id)
+            )
+            db.commit()
+            return True
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def remove_club_admin(club_id):
+        """Remove admin from club"""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                "UPDATE clubs SET admin_user_id = NULL WHERE club_id = %s",
+                (club_id,)
+            )
+            db.commit()
+            return True
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def get_clubs_with_admin_status():
+        """Get all clubs with admin status"""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT c.club_id, c.name, c.admin_user_id, 
+                       CASE WHEN c.admin_user_id IS NOT NULL THEN u.name ELSE NULL END as admin_name
+                FROM clubs c
+                LEFT JOIN users u ON u.user_id = c.admin_user_id
+                ORDER BY c.name
+                """
+            )
+            rows = cursor.fetchall()
+            return [
+                {
+                    'club_id': row[0],
+                    'name': row[1],
+                    'admin_user_id': row[2],
+                    'admin_name': row[3]
+                }
+                for row in rows
+            ]
+        except Exception as e:
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def get_club_by_id(club_id):
+        """Get club by ID"""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                "SELECT club_id, name, admin_user_id FROM clubs WHERE club_id = %s",
+                (club_id,)
+            )
+            result = cursor.fetchone()
+            if result:
+                return {
+                    'club_id': result[0],
+                    'name': result[1],
+                    'admin_user_id': result[2]
+                }
+            return None
+        except Exception as e:
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def create_club(name, foundation_date, club_type, admin_user_id=None, initial_budget=0):
+        """Create a new club with optional admin assignment and initial budget"""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            # Insert new club
+            cursor.execute(
+                """
+                INSERT INTO clubs (name, foundation_date, club_type, budget, admin_user_id)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (name, foundation_date, club_type, initial_budget, admin_user_id)
+            )
+            club_id = cursor.lastrowid
+            
+            # If admin_user_id provided, assign admin and update user role
+            if admin_user_id:
+                cursor.execute(
+                    "UPDATE clubs SET admin_user_id = %s WHERE club_id = %s",
+                    (admin_user_id, club_id)
+                )
+                cursor.execute(
+                    "UPDATE users SET role = 'CLUB_ADMIN' WHERE user_id = %s",
+                    (admin_user_id,)
+                )
+            
+            # If initial_budget > 0, create initial INCOME transaction
+            if initial_budget > 0:
+                cursor.execute(
+                    """
+                    INSERT INTO budget_transactions (club_id, amount, transaction_date, transaction_type, description)
+                    VALUES (%s, %s, %s, 'INCOME', %s)
+                    """,
+                    (club_id, initial_budget, date.today(), f'Initial budget allocation for {name}')
+                )
+            
+            db.commit()
+            
+            return {
+                'club_id': club_id,
+                'name': name,
+                'foundation_date': foundation_date,
+                'club_type': club_type,
+                'budget': initial_budget,
+                'admin_user_id': admin_user_id
+            }
+        except Exception as e:
+            db.rollback()
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def get_budget_summary():
+        """Get budget summary for all clubs with aggregated transaction data"""
+        cursor = get_cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT 
+                    c.club_id,
+                    c.name,
+                    c.budget as current_budget,
+                    COALESCE(SUM(CASE WHEN bt.transaction_type = 'EXPENSE' THEN bt.amount ELSE 0 END), 0) as total_spent,
+                    COALESCE(SUM(CASE WHEN bt.transaction_type = 'INCOME' THEN bt.amount ELSE 0 END), 0) as total_earned
+                FROM clubs c
+                LEFT JOIN budget_transactions bt ON bt.club_id = c.club_id
+                GROUP BY c.club_id, c.name, c.budget
+                ORDER BY c.name
+                """
+            )
+            rows = cursor.fetchall()
+            return [
+                {
+                    'club_id': row[0],
+                    'name': row[1],
+                    'current_budget': float(row[2]) if row[2] else 0.0,
+                    'total_spent': float(row[3]) if row[3] else 0.0,
+                    'total_earned': float(row[4]) if row[4] else 0.0
+                }
+                for row in rows
+            ]
+        except Exception as e:
+            raise e
+        finally:
+            cursor.close()
+
+    @staticmethod
+    def allocate_budget(club_id, amount, description=None):
+        """Allocate budget to a club by creating INCOME transaction and updating club budget"""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            # Insert INCOME transaction
+            cursor.execute(
+                """
+                INSERT INTO budget_transactions (club_id, amount, transaction_date, transaction_type, description)
+                VALUES (%s, %s, %s, 'INCOME', %s)
+                """,
+                (club_id, amount, date.today(), description or 'Budget allocation')
+            )
+            
+            # Update club budget
+            cursor.execute(
+                "UPDATE clubs SET budget = budget + %s WHERE club_id = %s",
+                (amount, club_id)
+            )
+            
+            db.commit()
+            return True
+        except Exception as e:
+            db.rollback()
+            raise e
         finally:
             cursor.close()
