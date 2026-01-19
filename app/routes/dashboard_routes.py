@@ -3,6 +3,7 @@ from app.routes.auth import require_login, require_role
 from app.models.user_model import User
 from app.models.club_model import Club
 from app.models.event_model import Event
+from app.db import get_cursor
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -64,4 +65,56 @@ def admin_dashboard():
         return redirect(url_for('auth.login_page'))
 
     first_name = user.get('name', 'User').split(' ')[0]
-    return render_template('admin_dashboard.html', first_name=first_name)
+    
+    # Execute database queries for overview statistics
+    cursor = get_cursor()
+    try:
+        # Total Users (all three types)
+        cursor.execute("SELECT COUNT(*) FROM users")
+        total_users = cursor.fetchone()[0]
+        
+        # Active Clubs
+        cursor.execute("SELECT COUNT(*) FROM clubs")
+        active_clubs = cursor.fetchone()[0]
+        
+        # Upcoming Events (events where end_date >= today, excluding overdue events)
+        cursor.execute("SELECT COUNT(*) FROM events WHERE end_date >= CURDATE()")
+        upcoming_events = cursor.fetchone()[0]
+        
+        # Club Membered Basic Users
+        cursor.execute("""
+            SELECT COUNT(DISTINCT cm.user_id) 
+            FROM club_members cm 
+            JOIN users u ON cm.user_id = u.user_id 
+            WHERE u.role = 'BASIC'
+        """)
+        club_membered_users = cursor.fetchone()[0]
+        
+        # Non-member Basic Users (for comparison)
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM users 
+            WHERE role = 'BASIC' 
+            AND user_id NOT IN (SELECT user_id FROM club_members)
+        """)
+        non_member_users = cursor.fetchone()[0]
+        
+    except Exception as e:
+        # Set default values on error
+        total_users = 0
+        active_clubs = 0
+        upcoming_events = 0
+        club_membered_users = 0
+        non_member_users = 0
+    finally:
+        cursor.close()
+    
+    return render_template(
+        'admin_dashboard.html',
+        first_name=first_name,
+        total_users=total_users,
+        active_clubs=active_clubs,
+        upcoming_events=upcoming_events,
+        club_membered_users=club_membered_users,
+        non_member_users=non_member_users
+    )

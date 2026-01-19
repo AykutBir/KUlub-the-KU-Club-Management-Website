@@ -37,6 +37,7 @@ CREATE TABLE events (
   publish_date DATE NOT NULL,
   end_date DATE NOT NULL,
   venue_id INT NOT NULL,
+  deleted BOOLEAN DEFAULT FALSE,
   FOREIGN KEY (club_id) REFERENCES clubs(club_id),
   FOREIGN KEY (venue_id) REFERENCES venues(venue_id)
 );
@@ -80,4 +81,16 @@ CREATE TABLE user_credentials (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
+);
+
+-- Event Modifications
+CREATE TABLE event_modifications (
+  modification_id INT AUTO_INCREMENT PRIMARY KEY,
+  event_id INT NOT NULL,
+  modification_type ENUM('UPDATE', 'DELETE') NOT NULL,
+  modification_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  description TEXT NULL,
+  modified_by_user_id INT NOT NULL,
+  FOREIGN KEY (event_id) REFERENCES events(event_id),
+  FOREIGN KEY (modified_by_user_id) REFERENCES users(user_id)
 );
