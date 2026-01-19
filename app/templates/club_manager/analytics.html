@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUlub - Analytics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/club_manager.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Top navigation -->
+    <header class="top-nav">
+        <div class="brand">
+            <span class="brand-name">KUlub</span>
+            <span class="brand-tag">Club Manager</span>
+        </div>
+        <div class="user-actions">
+            <span class="user-greeting">Hi, {{ user_name }}</span>
+            <button class="btn-outline" type="button" id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <!-- Sidebar navigation -->
+        <aside class="sidebar">
+            <nav class="nav-links">
+                <a href="{{ url_for('club_manager.dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' }}">Dashboard</a>
+                <a href="{{ url_for('club_manager.members') }}" class="nav-link {{ 'active' if active_page == 'members' }}">Members</a>
+                <a href="{{ url_for('club_manager.events') }}" class="nav-link {{ 'active' if active_page == 'events' }}">Events</a>
+                <a href="{{ url_for('club_manager.analytics') }}" class="nav-link {{ 'active' if active_page == 'analytics' }}">Analytics</a>
+                <a href="{{ url_for('club_manager.budget') }}" class="nav-link {{ 'active' if active_page == 'budget' }}">Budget</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <section class="section">
+                <h1 class="page-title">Analytics Dashboard</h1>
+                <p class="page-subtitle">{{ club.name }} - Advanced Insights</p>
+
+                <!-- Summary Stats -->
+                <div class="analytics-summary">
+                    <div class="stat-card">
+                        <span class="stat-value">{{ "%.1f"|format(avg_attendance) }}</span>
+                        <span class="stat-label">Avg Attendance per Event</span>
+                        <span class="stat-query">Query 3: Nested Aggregate</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ follower_conversion.total_followers }}</span>
+                        <span class="stat-label">Total Followers</span>
+                        <span class="stat-query">Query 6: Correlated Subquery</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ "%.1f"|format(follower_conversion.conversion_rate) }}%</span>
+                        <span class="stat-label">Follower Conversion Rate</span>
+                        <span class="stat-query">Query 6: Correlated Subquery</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ inactive_members|length }}</span>
+                        <span class="stat-label">Inactive Members</span>
+                        <span class="stat-query">Query 7: NOT EXISTS</span>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-grid">
+                    <!-- Event Performance Chart -->
+                    <div class="chart-card">
+                        <h3>Event Performance</h3>
+                        <p class="chart-subtitle">Query 1: GROUP BY + CASE Aggregate</p>
+                        <canvas id="eventPerformanceChart"></canvas>
+                    </div>
+
+                    <!-- Weekly Trend Chart -->
+                    <div class="chart-card">
+                        <h3>Weekly Attendance Trend</h3>
+                        <p class="chart-subtitle">Query 5: GROUP BY Week</p>
+                        <canvas id="weeklyTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top 3 Events -->
+                <div class="analytics-section">
+                    <h3>Top 3 Most Attended Events</h3>
+                    <p class="section-subtitle">Query 2: Nested Subquery with LIMIT</p>
+                    {% if top_3_events|length > 0 %}
+                    <div class="top-events-grid">
+                        {% for event in top_3_events %}
+                        <div class="top-event-card rank-{{ loop.index }}">
+                            <span class="rank">#{{ loop.index }}</span>
+                            <h4>{{ event.event_name }}</h4>
+                            <p>{{ event.event_start_date or 'Date TBD' }}</p>
+                            <span class="attendance-badge">{{ event.attendance_count }} attendees</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">No event data available yet.</div>
+                    {% endif %}
+                </div>
+
+                <!-- Quota Utilization -->
+                <div class="analytics-section">
+                    <h3>High-Performing Events (>50% Quota Utilization)</h3>
+                    <p class="section-subtitle">Query 4: HAVING Clause</p>
+                    {% if quota_utilization|length > 0 %}
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Event Name</th>
+                                    <th>Quota</th>
+                                    <th>Attended</th>
+                                    <th>Utilization</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in quota_utilization %}
+                                <tr>
+                                    <td>{{ event.event_name }}</td>
+                                    <td>{{ event.quota }}</td>
+                                    <td>{{ event.attended }}</td>
+                                    <td>
+                                        <div class="utilization-bar">
+                                            <div class="utilization-fill" style="width: {{ event.utilization_pct }}%"></div>
+                                            <span>{{ "%.1f"|format(event.utilization_pct) }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">No events with >50% utilization yet.</div>
+                    {% endif %}
+                </div>
+
+                <!-- Inactive Members -->
+                <div class="analytics-section">
+                    <h3>Inactive Members</h3>
+                    <p class="section-subtitle">Query 7: NOT EXISTS - Members who haven't attended any event</p>
+                    {% if inactive_members|length > 0 %}
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Joined Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in inactive_members %}
+                                <tr>
+                                    <td>{{ member.name }}</td>
+                                    <td>{{ member.joined_at }}</td>
+                                    <td><span class="status-badge inactive">Inactive</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state success">All members have attended at least one event!</div>
+                    {% endif %}
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/club_manager.js') }}"></script>
+    <script>
+        // Event Performance Chart (Bar Chart)
+        const eventPerformanceData = {{ event_performance|tojson|safe }};
+        if (eventPerformanceData.length > 0) {
+            new Chart(document.getElementById('eventPerformanceChart'), {
+                type: 'bar',
+                data: {
+                    labels: eventPerformanceData.map(e => e.event_name.substring(0, 20) + (e.event_name.length > 20 ? '...' : '')),
+                    datasets: [
+                        {
+                            label: 'Attended',
+                            data: eventPerformanceData.map(e => e.attended_count),
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Saved',
+                            data: eventPerformanceData.map(e => e.saved_count),
+                            backgroundColor: 'rgba(118, 75, 162, 0.8)',
+                            borderColor: 'rgba(118, 75, 162, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+        }
+
+        // Weekly Trend Chart (Line Chart)
+        const weeklyTrendData = {{ weekly_trend|tojson|safe }};
+        if (weeklyTrendData.length > 0) {
+            new Chart(document.getElementById('weeklyTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: weeklyTrendData.map(w => `Week ${w.week}`),
+                    datasets: [{
+                        label: 'Attendance',
+                        data: weeklyTrendData.map(w => w.total_attendance),
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUlub - Budget Tracking</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/club_manager.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Top navigation -->
+    <header class="top-nav">
+        <div class="brand">
+            <span class="brand-name">KUlub</span>
+            <span class="brand-tag">Club Manager</span>
+        </div>
+        <div class="user-actions">
+            <span class="user-greeting">Hi, {{ user_name }}</span>
+            <button class="btn-outline" type="button" id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <!-- Sidebar navigation -->
+        <aside class="sidebar">
+            <nav class="nav-links">
+                <a href="{{ url_for('club_manager.dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' }}">Dashboard</a>
+                <a href="{{ url_for('club_manager.members') }}" class="nav-link {{ 'active' if active_page == 'members' }}">Members</a>
+                <a href="{{ url_for('club_manager.events') }}" class="nav-link {{ 'active' if active_page == 'events' }}">Events</a>
+                <a href="{{ url_for('club_manager.analytics') }}" class="nav-link {{ 'active' if active_page == 'analytics' }}">Analytics</a>
+                <a href="{{ url_for('club_manager.budget') }}" class="nav-link {{ 'active' if active_page == 'budget' }}">Budget</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <section class="section">
+                <div class="section-header-row">
+                    <div>
+                        <h1 class="page-title">Budget Tracking</h1>
+                        <p class="page-subtitle">{{ club.name }}</p>
+                    </div>
+                    <button class="btn-primary" onclick="openAddModal()">+ Add Transaction</button>
+                </div>
+
+                <!-- Budget Summary -->
+                <div class="budget-summary">
+                    <div class="budget-card balance">
+                        <span class="budget-label">Current Balance</span>
+                        <span class="budget-value">${{ "%.2f"|format(club.budget) }}</span>
+                    </div>
+                    <div class="budget-card income">
+                        <span class="budget-label">Total Income</span>
+                        <span class="budget-value">${{ "%.2f"|format(income_vs_expense.total_income) }}</span>
+                    </div>
+                    <div class="budget-card expense">
+                        <span class="budget-label">Total Expenses</span>
+                        <span class="budget-value">${{ "%.2f"|format(income_vs_expense.total_expense) }}</span>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Income vs Expense</h3>
+                        <canvas id="incomeExpenseChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Monthly Expense Breakdown</h3>
+                        <canvas id="expenseBreakdownChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Transactions Table -->
+                <div class="analytics-section">
+                    <h3>Transaction History</h3>
+                    {% if transactions|length > 0 %}
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in transactions %}
+                                <tr>
+                                    <td>{{ tx.transaction_date }}</td>
+                                    <td>
+                                        <span class="type-badge {{ tx.transaction_type|lower }}">
+                                            {{ tx.transaction_type }}
+                                        </span>
+                                    </td>
+                                    <td class="{{ 'amount-income' if tx.transaction_type == 'INCOME' else 'amount-expense' }}">
+                                        {{ '+' if tx.transaction_type == 'INCOME' else '-' }}${{ "%.2f"|format(tx.amount) }}
+                                    </td>
+                                    <td>{{ tx.description or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <p>No transactions yet. Add your first transaction!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Transaction Modal -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <h3>Add Transaction</h3>
+            <form id="addTransactionForm">
+                <div class="form-group">
+                    <label for="transaction_type">Type *</label>
+                    <select id="transaction_type" name="transaction_type" required>
+                        <option value="INCOME">Income</option>
+                        <option value="EXPENSE">Expense</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Amount *</label>
+                    <input type="number" id="amount" name="amount" min="0.01" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <input type="text" id="description" name="description" placeholder="e.g., Workshop materials">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-outline" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/club_manager.js') }}"></script>
+    <script>
+        // Income vs Expense Doughnut Chart
+        const incomeExpenseData = {{ income_vs_expense|tojson|safe }};
+        new Chart(document.getElementById('incomeExpenseChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Income', 'Expense'],
+                datasets: [{
+                    data: [incomeExpenseData.total_income, incomeExpenseData.total_expense],
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Monthly Expense Breakdown Pie Chart
+        const monthlyBreakdown = {{ monthly_breakdown|tojson|safe }};
+        if (monthlyBreakdown.length > 0) {
+            new Chart(document.getElementById('expenseBreakdownChart'), {
+                type: 'pie',
+                data: {
+                    labels: monthlyBreakdown.map(m => m.description || 'Other'),
+                    datasets: [{
+                        data: monthlyBreakdown.map(m => m.total_expense),
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(34, 197, 94, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Modal functions
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('active');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+            document.getElementById('addTransactionForm').reset();
+        }
+
+        // Form submission
+        document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+
+            try {
+                const response = await fetch('/clubmgr/budget/add', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    closeAddModal();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

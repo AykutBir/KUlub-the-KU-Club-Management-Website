@@ -1,0 +1,73 @@
+{% extends 'basic/base_basic.html' %}
+
+{% block content %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2>Discover Clubs</h2>
+            <p>Find your next community on campus.</p>
+        </div>
+        <div class="search-wrap">
+            <input type="text" placeholder="Search clubs by name or type" data-club-search>
+        </div>
+    </div>
+
+    {% if user_club %}
+    <div class="banner">You are already a member of {{ user_club.name }}.</div>
+    {% endif %}
+
+    <div class="grid">
+        {% for club in clubs %}
+        <article class="card club-card" data-club="{{ club.name }} {{ club.club_type }}">
+            <div class="card-header">
+                <h3>{{ club.name }}</h3>
+                <span class="badge {{ club.club_type|lower }}">{{ club.club_type }}</span>
+            </div>
+            <p class="meta">Founded: {{ club.foundation_date }}</p>
+            <div class="card-actions">
+                {% if club.club_id in followed_club_ids %}
+                <form method="POST" action="{{ url_for('clubs.unfollow_club', club_id=club.club_id) }}">
+                    <button class="btn-outline" type="submit">Unfollow</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('clubs.follow_club', club_id=club.club_id) }}">
+                    <button class="btn-outline" type="submit">Follow</button>
+                </form>
+                {% endif %}
+
+                {% if club.club_type == 'STANDARD' %}
+                    {% set status = membership_status_by_club.get(club.club_id) %}
+                    {% if user_club %}
+                        <button class="btn-disabled" type="button" disabled>Membership Locked</button>
+                    {% elif status %}
+                        <button class="btn-disabled" type="button" disabled>{{ status|capitalize }}</button>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('clubs.request_membership', club_id=club.club_id) }}">
+                            <button class="btn-primary" type="submit">Request Membership</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+        {% if clubs|length == 0 %}
+        <div class="empty-state">No clubs available right now.</div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+    const searchInput = document.querySelector('[data-club-search]');
+    const clubCards = Array.from(document.querySelectorAll('.club-card'));
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (event) => {
+            const term = event.target.value.trim().toLowerCase();
+            clubCards.forEach((card) => {
+                const haystack = card.dataset.club.toLowerCase();
+                card.style.display = haystack.includes(term) ? '' : 'none';
+            });
+        });
+    }
+</script>
+{% endblock %}
