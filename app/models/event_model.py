@@ -11,6 +11,7 @@ class Event:
             cursor.execute(
                 """
                 SELECT e.event_id,
+                       e.club_id,
                        e.name,
                        e.publish_date,
                        e.end_date,
@@ -29,12 +30,13 @@ class Event:
             return [
                 {
                     "event_id": row[0],
-                    "name": row[1],
-                    "publish_date": row[2],
-                    "end_date": row[3],
-                    "club_name": row[4],
-                    "venue_name": row[5],
-                    "capacity": row[6],
+                    "club_id": row[1],
+                    "name": row[2],
+                    "publish_date": row[3],
+                    "end_date": row[4],
+                    "club_name": row[5],
+                    "venue_name": row[6],
+                    "capacity": row[7],
                 }
                 for row in rows
             ]
