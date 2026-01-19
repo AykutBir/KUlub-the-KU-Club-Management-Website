@@ -1,0 +1,30 @@
+{% extends 'basic/base_basic.html' %}
+
+{% block content %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2>Followed Clubs</h2>
+            <p>Clubs you keep up with.</p>
+        </div>
+    </div>
+
+    <div class="grid">
+        {% for club in followed_clubs %}
+        <article class="card">
+            <div class="card-header">
+                <h3>{{ club.name }}</h3>
+                <span class="badge {{ club.club_type|lower }}">{{ club.club_type }}</span>
+            </div>
+            <p class="meta">Founded: {{ club.foundation_date }}</p>
+            <form method="POST" action="{{ url_for('clubs.unfollow_club', club_id=club.club_id) }}">
+                <button class="btn-outline" type="submit">Unfollow</button>
+            </form>
+        </article>
+        {% endfor %}
+        {% if followed_clubs|length == 0 %}
+        <div class="empty-state">No followed clubs yet.</div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

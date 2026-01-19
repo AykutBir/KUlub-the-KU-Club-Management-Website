@@ -1,0 +1,48 @@
+{% extends 'basic/base_basic.html' %}
+
+{% block content %}
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2>Events Feed</h2>
+            <p>Upcoming gatherings from clubs you follow.</p>
+        </div>
+    </div>
+
+    <div class="grid">
+        {% for event in events %}
+        {% set is_saved = event.event_id in saved_event_ids %}
+        {% set is_attending = event.event_id in attending_event_ids %}
+        <article class="card">
+            <div class="card-header">
+                <h3>{{ event.name }}</h3>
+                <span class="pill">{{ event.club_name }}</span>
+            </div>
+            <p class="meta">{{ event.publish_date }} - {{ event.end_date }}</p>
+            <p class="meta">Venue: {{ event.venue_name }} (Capacity {{ event.capacity }})</p>
+            <div class="card-actions">
+                {% if is_attending %}
+                <form method="POST" action="{{ url_for('events.cancel_attendance', event_id=event.event_id) }}">
+                    <button class="btn-outline" type="submit">Cancel Attendance</button>
+                </form>
+                {% elif is_saved %}
+                <form method="POST" action="{{ url_for('events.unsave_event', event_id=event.event_id) }}">
+                    <button class="btn-outline" type="submit">Unsave</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('events.save_event', event_id=event.event_id) }}">
+                    <button class="btn-outline" type="submit">Save</button>
+                </form>
+                <form method="POST" action="{{ url_for('events.attend_event', event_id=event.event_id) }}">
+                    <button class="btn-primary" type="submit">Attend</button>
+                </form>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+        {% if events|length == 0 %}
+        <div class="empty-state">No upcoming events for your followed clubs yet.</div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
