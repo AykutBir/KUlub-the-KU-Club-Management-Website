@@ -192,7 +192,7 @@ class ClubManager:
 
             user_id = row[0]
 
-            # Ensure club is STANDARD and user is eligible to join
+            # Ensure club exists and user is eligible to join
             cursor.execute(
                 "SELECT club_type FROM clubs WHERE club_id = %s",
                 (club_id,),
@@ -200,8 +200,6 @@ class ClubManager:
             club_row = cursor.fetchone()
             if not club_row:
                 return False, "Club not found"
-            if club_row[0] == 'OFFICIAL':
-                return False, "Official clubs cannot approve membership requests"
 
             cursor.execute(
                 "SELECT role FROM users WHERE user_id = %s",
@@ -221,19 +219,20 @@ class ClubManager:
             if cursor.fetchone():
                 return False, "User is already a member of a club"
 
-            # Insert into club_members
+            # Update request status FIRST (before inserting into club_members)
+            # This allows the trigger to check membership status before the user is added
+            cursor.execute(
+                "UPDATE membership_requests SET status = 'APPROVED' WHERE request_id = %s",
+                (request_id,),
+            )
+
+            # Insert into club_members AFTER updating request status
             cursor.execute(
                 """
                 INSERT INTO club_members (user_id, club_id, joined_at, membership_title)
                 VALUES (%s, %s, NOW(), 'Member')
                 """,
                 (user_id, club_id),
-            )
-
-            # Update request status
-            cursor.execute(
-                "UPDATE membership_requests SET status = 'APPROVED' WHERE request_id = %s",
-                (request_id,),
             )
 
             db.commit()
