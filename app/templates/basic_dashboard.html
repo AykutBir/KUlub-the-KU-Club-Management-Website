@@ -196,7 +196,9 @@
                         <span class="badge {{ user_club.club_type|lower }}">{{ user_club.club_type }}</span>
                     </div>
                     <p class="meta">Founded: {{ user_club.foundation_date }}</p>
-                    <button class="btn-outline" type="button">Leave Club</button>
+                    <form method="POST" action="{{ url_for('clubs.leave_club') }}">
+                        <button class="btn-outline" type="submit">Leave Club</button>
+                    </form>
                 </div>
                 {% else %}
                 <div class="card">

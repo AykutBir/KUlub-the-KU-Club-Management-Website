@@ -160,6 +160,49 @@ class Club:
             cursor.close()
 
     @staticmethod
+    def leave_club(user_id):
+        """Allow a user to leave their club membership."""
+        db = get_db()
+        cursor = get_cursor()
+        try:
+            # Check if user is a member of a club and get the club_id
+            cursor.execute(
+                "SELECT club_id FROM club_members WHERE user_id = %s LIMIT 1",
+                (user_id,),
+            )
+            membership = cursor.fetchone()
+            if not membership:
+                return False, "You are not a member of any club."
+
+            club_id = membership[0]
+
+            # Delete the membership record
+            cursor.execute(
+                "DELETE FROM club_members WHERE user_id = %s",
+                (user_id,),
+            )
+            if cursor.rowcount == 0:
+                return False, "Unable to leave club."
+
+            # Update the membership request status to REJECTED
+            cursor.execute(
+                """
+                UPDATE membership_requests
+                SET status = 'REJECTED'
+                WHERE user_id = %s AND club_id = %s AND status = 'APPROVED'
+                """,
+                (user_id, club_id),
+            )
+            
+            db.commit()
+            return True, "You have successfully left the club."
+        except Exception as e:
+            db.rollback()
+            return False, str(e)
+        finally:
+            cursor.close()
+
+    @staticmethod
     def follow_club(user_id, club_id):
         """Follow a club."""
         db = get_db()
