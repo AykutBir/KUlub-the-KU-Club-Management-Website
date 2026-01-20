@@ -67,3 +67,17 @@ def request_membership(club_id):
     success, message = Club.create_membership_request(session.get('user_id'), club_id)
     flash(message, 'success' if success else 'error')
     return _redirect_back()
+
+
+@club_bp.route('/clubs/leave', methods=['POST'])
+@require_login
+def leave_club():
+    role = session.get('role')
+    if role != 'BASIC':
+        flash('Only basic users can leave clubs.', 'error')
+        return _redirect_back()
+
+    user_id = session.get('user_id')
+    success, message = Club.leave_club(user_id)
+    flash(message, 'success' if success else 'error')
+    return _redirect_back()

@@ -200,6 +200,10 @@ class ClubManager:
             club_row = cursor.fetchone()
             if not club_row:
                 return False, "Club not found"
+            
+            # Check if club is OFFICIAL (replaces trigger trg_block_approve_if_member_or_official)
+            if club_row[0] == 'OFFICIAL':
+                return False, "Official clubs cannot approve membership requests."
 
             cursor.execute(
                 "SELECT role FROM users WHERE user_id = %s",
@@ -211,7 +215,7 @@ class ClubManager:
             if role_row[0] != 'BASIC':
                 return False, "Only basic users can become club members"
 
-            # Check if user is already a member of any club
+            # Check if user is already a member of any club (replaces trigger trg_block_approve_if_member_or_official)
             cursor.execute(
                 "SELECT club_id FROM club_members WHERE user_id = %s",
                 (user_id,),
@@ -220,7 +224,6 @@ class ClubManager:
                 return False, "User is already a member of a club"
 
             # Update request status FIRST (before inserting into club_members)
-            # This allows the trigger to check membership status before the user is added
             cursor.execute(
                 "UPDATE membership_requests SET status = 'APPROVED' WHERE request_id = %s",
                 (request_id,),

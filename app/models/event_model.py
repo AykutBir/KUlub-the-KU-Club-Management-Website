@@ -378,6 +378,18 @@ class Event:
         db = get_db()
         cursor = get_cursor()
         try:
+            # Check if user is already attending this event (replaces trigger trg_block_save_if_attending)
+            cursor.execute(
+                """
+                SELECT 1 FROM event_attendance
+                WHERE user_id = %s AND event_id = %s
+                LIMIT 1
+                """,
+                (user_id, event_id),
+            )
+            if cursor.fetchone():
+                raise ValueError('Cannot save an event you are attending.')
+            
             cursor.execute(
                 """
                 INSERT INTO event_saves (user_id, event_id)
@@ -418,6 +430,18 @@ class Event:
         db = get_db()
         cursor = get_cursor()
         try:
+            # Check if user has saved this event (replaces trigger trg_block_attend_if_saved)
+            cursor.execute(
+                """
+                SELECT 1 FROM event_saves
+                WHERE user_id = %s AND event_id = %s
+                LIMIT 1
+                """,
+                (user_id, event_id),
+            )
+            if cursor.fetchone():
+                raise ValueError('Cannot attend an event you have saved.')
+            
             cursor.execute(
                 """
                 INSERT INTO event_attendance (user_id, event_id)
