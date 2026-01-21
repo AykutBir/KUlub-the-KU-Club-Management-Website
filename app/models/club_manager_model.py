@@ -4,10 +4,10 @@ from app.db import get_cursor, get_db
 class ClubManager:
     """Model for club manager operations - all database queries for club administration."""
 
-    # =============================================
+    
     # CLUB INFO & DASHBOARD
-    # =============================================
-
+    
+    #getting club info where user is also administrator.
     @staticmethod
     def get_admin_club(user_id):
         """Get the club managed by this admin user."""
@@ -35,7 +35,7 @@ class ClubManager:
             }
         finally:
             cursor.close()
-
+   # coubnt how many people joined this club 
     @staticmethod
     def get_member_count(club_id):
         """Get total member count for the club."""
@@ -49,7 +49,7 @@ class ClubManager:
             return row[0] if row else 0
         finally:
             cursor.close()
-
+    #counting events that not ended yet
     @staticmethod
     def get_upcoming_events_count(club_id):
         """Get count of upcoming events (end_date >= today)."""
@@ -66,7 +66,7 @@ class ClubManager:
             return row[0] if row else 0
         finally:
             cursor.close()
-
+    #summing up all event attendance in past month
     @staticmethod
     def get_total_attendance_last_30_days(club_id):
         """Get total attendance in last 30 days."""
@@ -87,7 +87,7 @@ class ClubManager:
             return row[0] if row else 0
         finally:
             cursor.close()
-
+    # finding the event with highest attendance
     @staticmethod
     def get_most_popular_event(club_id):
         """Get the most popular event by attendance."""
@@ -116,7 +116,7 @@ class ClubManager:
     # =============================================
     # MEMBERSHIP MANAGEMENT
     # =============================================
-
+    # Getting all pending membership requests for the club.
     @staticmethod
     def get_pending_requests(club_id):
         """Get all pending membership requests for the club."""
@@ -145,7 +145,7 @@ class ClubManager:
             ]
         finally:
             cursor.close()
-
+    # rejectinh a pending membership request
     @staticmethod
     def get_current_members(club_id):
         """Get all current members of the club."""
@@ -174,14 +174,14 @@ class ClubManager:
             ]
         finally:
             cursor.close()
-
+# approving a pending membership request
     @staticmethod
     def approve_request(request_id, club_id):
         """Approve a membership request - add user to members and update request status."""
         cursor = get_cursor()
         db = get_db()
         try:
-            # Get request details
+            # got request details
             cursor.execute(
                 "SELECT user_id FROM membership_requests WHERE request_id = %s AND club_id = %s AND status = 'PENDING'",
                 (request_id, club_id),
@@ -192,7 +192,7 @@ class ClubManager:
 
             user_id = row[0]
 
-            # Ensure club exists and user is eligible to join
+            # ensure club exists and user is eligble to join
             cursor.execute(
                 "SELECT club_type FROM clubs WHERE club_id = %s",
                 (club_id,),
@@ -201,7 +201,7 @@ class ClubManager:
             if not club_row:
                 return False, "Club not found"
             
-            # Check if club is OFFICIAL (replaces trigger trg_block_approve_if_member_or_official)
+            # Check whether if club is offical (replaces trigger trg_block_approve_if_member_or_official)
             if club_row[0] == 'OFFICIAL':
                 return False, "Official clubs cannot approve membership requests."
 
@@ -215,7 +215,7 @@ class ClubManager:
             if role_row[0] != 'BASIC':
                 return False, "Only basic users can become club members"
 
-            # Check if user is already a member of any club (replaces trigger trg_block_approve_if_member_or_official)
+            # check if user is already a member of any club 
             cursor.execute(
                 "SELECT club_id FROM club_members WHERE user_id = %s",
                 (user_id,),
@@ -223,13 +223,13 @@ class ClubManager:
             if cursor.fetchone():
                 return False, "User is already a member of a club"
 
-            # Update request status FIRST (before inserting into club_members)
+            # updating request status first before inserting into club_members
             cursor.execute(
                 "UPDATE membership_requests SET status = 'APPROVED' WHERE request_id = %s",
                 (request_id,),
             )
 
-            # Insert into club_members AFTER updating request status
+            # insert into club_members after updating request status
             cursor.execute(
                 """
                 INSERT INTO club_members (user_id, club_id, joined_at, membership_title)
@@ -245,7 +245,7 @@ class ClubManager:
             return False, str(e)
         finally:
             cursor.close()
-
+    #decline a pending membership request
     @staticmethod
     def decline_request(request_id, club_id):
         """Decline a membership request."""
@@ -269,7 +269,7 @@ class ClubManager:
             return False, str(e)
         finally:
             cursor.close()
-
+    #remove sb from club's member list
     @staticmethod
     def kick_member(user_id, club_id):
         """Remove a member from the club."""
@@ -289,7 +289,7 @@ class ClubManager:
             return False, str(e)
         finally:
             cursor.close()
-
+    #changing a member's title
     @staticmethod
     def update_member_title(user_id, club_id, new_title):
         """Update a member's title."""
@@ -314,10 +314,9 @@ class ClubManager:
         finally:
             cursor.close()
 
-    # =============================================
     # EVENT MANAGEMENT
-    # =============================================
-
+   
+    #get locations where event can be held
     @staticmethod
     def get_venues():
         """Get all available venues."""
@@ -331,7 +330,7 @@ class ClubManager:
             ]
         finally:
             cursor.close()
-
+    #getting all events for the club
     @staticmethod
     def get_club_events(club_id):
         """Get all events for the club with attendance count."""
@@ -372,14 +371,14 @@ class ClubManager:
             ]
         finally:
             cursor.close()
-
+    #set a new event for the club
     @staticmethod
     def create_event(club_id, name, description, publish_date, end_date, venue_id, quota, event_start_date, category):
         """Create a new event for the club."""
         cursor = get_cursor()
         db = get_db()
         try:
-            # Validate quota against venue capacity
+            # validate quota against venue capacity
             cursor.execute("SELECT capacity FROM venues WHERE venue_id = %s", (venue_id,))
             venue = cursor.fetchone()
             if not venue:
@@ -401,7 +400,7 @@ class ClubManager:
             return False, str(e)
         finally:
             cursor.close()
-
+# removing an event from the club's event list
     @staticmethod
     def delete_event(event_id, club_id):
         """Delete an event (only if it belongs to the club)."""
@@ -422,10 +421,8 @@ class ClubManager:
         finally:
             cursor.close()
 
-    # =============================================
     # ANALYTICS - 7 ADVANCED QUERIES
-    # =============================================
-
+    #break down of event performance with how many attended and saved
     @staticmethod
     def analytics_event_performance(club_id):
         """Query 1: Event Performance - GROUP BY + aggregate with CASE."""
@@ -456,7 +453,7 @@ class ClubManager:
             ]
         finally:
             cursor.close()
-
+    # find top 3 most attended events
     @staticmethod
     def analytics_top_3_events(club_id):
         """Query 2: Top 3 Most Attended Events - Nested Subquery."""
@@ -490,7 +487,7 @@ class ClubManager:
             ]
         finally:
             cursor.close()
-
+    #average turnout across all events
     @staticmethod
     def analytics_avg_attendance(club_id):
         """Query 3: Average Attendance per Event - Nested Aggregate."""
@@ -514,7 +511,7 @@ class ClubManager:
             return float(row[0]) if row and row[0] else 0.0
         finally:
             cursor.close()
-
+    #events that filled more then half their capacity
     @staticmethod
     def analytics_quota_utilization(club_id):
         """Query 4: Events with >50% Quota Utilization - HAVING clause."""
@@ -547,7 +544,7 @@ class ClubManager:
             ]
         finally:
             cursor.close()
-
+    #tracking attendence patterns weekly
     @staticmethod
     def analytics_weekly_trend(club_id):
         """Query 5: Weekly Attendance Trend - GROUP BY week."""
@@ -575,7 +572,7 @@ class ClubManager:
             ]
         finally:
             cursor.close()
-
+    #floowers that actually attended events
     @staticmethod
     def analytics_follower_conversion(club_id):
         """Query 6: Follower to Attendee Conversion - Correlated Subquery."""
@@ -606,7 +603,7 @@ class ClubManager:
             }
         finally:
             cursor.close()
-
+    #find members that never attended any event
     @staticmethod
     def analytics_inactive_members(club_id):
         """Query 7: Inactive Members - NOT EXISTS."""
@@ -637,10 +634,8 @@ class ClubManager:
         finally:
             cursor.close()
 
-    # =============================================
     # BUDGET TRACKING
-    # =============================================
-
+    # getting all budget transactions for the club
     @staticmethod
     def get_budget_transactions(club_id):
         """Get all budget transactions for the club."""
@@ -668,14 +663,14 @@ class ClubManager:
             ]
         finally:
             cursor.close()
-
+    #recording a new budget transaction for the club
     @staticmethod
     def add_budget_transaction(club_id, amount, transaction_type, description):
         """Add a new budget transaction and update club balance."""
         cursor = get_cursor()
         db = get_db()
         try:
-            # Insert transaction
+            # insert transaction
             cursor.execute(
                 """
                 INSERT INTO budget_transactions (club_id, amount, transaction_date, transaction_type, description)
@@ -684,13 +679,14 @@ class ClubManager:
                 (club_id, amount, transaction_type, description),
             )
 
-            # Update club budget
+            # 
+            #update club budget
             if transaction_type == 'INCOME':
                 cursor.execute(
                     "UPDATE clubs SET budget = budget + %s WHERE club_id = %s",
                     (amount, club_id),
                 )
-            else:  # EXPENSE
+            else:  # expense
                 cursor.execute(
                     "UPDATE clubs SET budget = budget - %s WHERE club_id = %s",
                     (amount, club_id),
@@ -703,7 +699,7 @@ class ClubManager:
             return False, str(e)
         finally:
             cursor.close()
-
+    #cartegorizing expenses in this month spending by description
     @staticmethod
     def get_monthly_expense_breakdown(club_id):
         """Get monthly expense breakdown by description."""
@@ -727,7 +723,7 @@ class ClubManager:
             ]
         finally:
             cursor.close()
-
+    # comparing income vs expense for the club
     @staticmethod
     def get_income_vs_expense(club_id):
         """Get total income vs expense for the club."""
