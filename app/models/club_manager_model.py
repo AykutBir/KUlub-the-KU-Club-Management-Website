@@ -10,7 +10,6 @@ class ClubManager:
     #getting club info where user is also administrator.
     @staticmethod
     def get_admin_club(user_id):
-        """Get the club managed by this admin user."""
         cursor = get_cursor()
         try:
             cursor.execute(
@@ -25,34 +24,28 @@ class ClubManager:
             row = cursor.fetchone()
             if not row:
                 return None
-            return {
-                "club_id": row[0],
-                "name": row[1],
-                "foundation_date": row[2],
-                "budget": float(row[3]) if row[3] else 0.0,
-                "club_type": row[4],
-                "description": row[5],
-            }
+            return {"club_id": row[0],"name": row[1],
+                "foundation_date": row[2], "budget": float(row[3]) if row[3] else 0.0,
+                "club_type": row[4],"description": row[5],}
         finally:
             cursor.close()
+
    # coubnt how many people joined this club 
     @staticmethod
     def get_member_count(club_id):
-        """Get total member count for the club."""
         cursor = get_cursor()
         try:
             cursor.execute(
                 "SELECT COUNT(*) FROM club_members WHERE club_id = %s",
-                (club_id,),
-            )
+                (club_id,),)
             row = cursor.fetchone()
             return row[0] if row else 0
         finally:
             cursor.close()
+
     #counting events that not ended yet
     @staticmethod
     def get_upcoming_events_count(club_id):
-        """Get count of upcoming events (end_date >= today)."""
         cursor = get_cursor()
         try:
             cursor.execute(
@@ -66,10 +59,10 @@ class ClubManager:
             return row[0] if row else 0
         finally:
             cursor.close()
+
     #summing up all event attendance in past month
     @staticmethod
     def get_total_attendance_last_30_days(club_id):
-        """Get total attendance in last 30 days."""
         cursor = get_cursor()
         try:
             cursor.execute(
@@ -87,10 +80,10 @@ class ClubManager:
             return row[0] if row else 0
         finally:
             cursor.close()
+
     # finding the event with highest attendance
     @staticmethod
     def get_most_popular_event(club_id):
-        """Get the most popular event by attendance."""
         cursor = get_cursor()
         try:
             cursor.execute(
@@ -113,13 +106,10 @@ class ClubManager:
         finally:
             cursor.close()
 
-    # =============================================
-    # MEMBERSHIP MANAGEMENT
-    # =============================================
+
     # Getting all pending membership requests for the club.
     @staticmethod
     def get_pending_requests(club_id):
-        """Get all pending membership requests for the club."""
         cursor = get_cursor()
         try:
             cursor.execute(
@@ -134,21 +124,15 @@ class ClubManager:
             )
             rows = cursor.fetchall()
             return [
-                {
-                    "request_id": row[0],
-                    "user_id": row[1],
-                    "name": row[2],
-                    "email": row[3],
-                    "requested_at": row[4],
-                }
+                {"request_id": row[0],"user_id": row[1],"name": row[2],"email": row[3],"requested_at": row[4],}
                 for row in rows
             ]
         finally:
             cursor.close()
+
     # rejectinh a pending membership request
     @staticmethod
     def get_current_members(club_id):
-        """Get all current members of the club."""
         cursor = get_cursor()
         try:
             cursor.execute(
@@ -163,29 +147,25 @@ class ClubManager:
             )
             rows = cursor.fetchall()
             return [
-                {
-                    "user_id": row[0],
-                    "name": row[1],
-                    "email": row[2],
-                    "joined_at": row[3],
-                    "membership_title": row[4] or "Member",
-                }
-                for row in rows
-            ]
+                {"user_id": row[0],"name": row[1],
+                    "email": row[2],"joined_at": row[3],
+                    "membership_title": row[4] or "Member",}
+                for row in rows]
         finally:
             cursor.close()
+
+
 # approving a pending membership request
     @staticmethod
     def approve_request(request_id, club_id):
-        """Approve a membership request - add user to members and update request status."""
+
         cursor = get_cursor()
         db = get_db()
         try:
             # got request details
             cursor.execute(
                 "SELECT user_id FROM membership_requests WHERE request_id = %s AND club_id = %s AND status = 'PENDING'",
-                (request_id, club_id),
-            )
+                (request_id, club_id),)
             row = cursor.fetchone()
             if not row:
                 return False, "Request not found or already processed"
@@ -207,8 +187,7 @@ class ClubManager:
 
             cursor.execute(
                 "SELECT role FROM users WHERE user_id = %s",
-                (user_id,),
-            )
+                (user_id,),)
             role_row = cursor.fetchone()
             if not role_row:
                 return False, "User not found"
@@ -245,10 +224,10 @@ class ClubManager:
             return False, str(e)
         finally:
             cursor.close()
+
     #decline a pending membership request
     @staticmethod
     def decline_request(request_id, club_id):
-        """Decline a membership request."""
         cursor = get_cursor()
         db = get_db()
         try:
@@ -269,10 +248,11 @@ class ClubManager:
             return False, str(e)
         finally:
             cursor.close()
+
+
     #remove sb from club's member list
     @staticmethod
     def kick_member(user_id, club_id):
-        """Remove a member from the club."""
         cursor = get_cursor()
         db = get_db()
         try:
@@ -289,10 +269,10 @@ class ClubManager:
             return False, str(e)
         finally:
             cursor.close()
+
     #changing a member's title
     @staticmethod
     def update_member_title(user_id, club_id, new_title):
-        """Update a member's title."""
         cursor = get_cursor()
         db = get_db()
         try:
@@ -319,7 +299,6 @@ class ClubManager:
     #get locations where event can be held
     @staticmethod
     def get_venues():
-        """Get all available venues."""
         cursor = get_cursor()
         try:
             cursor.execute("SELECT venue_id, name, capacity FROM venues ORDER BY name")
@@ -333,7 +312,6 @@ class ClubManager:
     #getting all events for the club
     @staticmethod
     def get_club_events(club_id):
-        """Get all events for the club with attendance count."""
         cursor = get_cursor()
         try:
             cursor.execute(
@@ -366,15 +344,13 @@ class ClubManager:
                     "venue_name": row[8],
                     "venue_capacity": row[9],
                     "attendance_count": row[10],
-                }
-                for row in rows
-            ]
+                } for row in rows]
         finally:
             cursor.close()
     #set a new event for the club
     @staticmethod
     def create_event(club_id, name, description, publish_date, end_date, venue_id, quota, event_start_date, category):
-        """Create a new event for the club."""
+
         cursor = get_cursor()
         db = get_db()
         try:
@@ -400,10 +376,10 @@ class ClubManager:
             return False, str(e)
         finally:
             cursor.close()
-# removing an event from the club's event list
+
+    # removing an event from the club's event list
     @staticmethod
     def delete_event(event_id, club_id):
-        """Delete an event (only if it belongs to the club)."""
         cursor = get_cursor()
         db = get_db()
         try:
@@ -443,16 +419,12 @@ class ClubManager:
             )
             rows = cursor.fetchall()
             return [
-                {
-                    "event_id": row[0],
-                    "event_name": row[1],
-                    "attended_count": row[2],
-                    "saved_count": row[3],
-                }
-                for row in rows
-            ]
+                {"event_id": row[0],"event_name": row[1],"attended_count": row[2],
+                 "saved_count": row[3],
+                }for row in rows]
         finally:
             cursor.close()
+
     # find top 3 most attended events
     @staticmethod
     def analytics_top_3_events(club_id):
@@ -474,19 +446,15 @@ class ClubManager:
                 ORDER BY attendance_count DESC
                 LIMIT 3
                 """,
-                (club_id,),
-            )
+                (club_id,),)
             rows = cursor.fetchall()
             return [
-                {
-                    "event_name": row[0],
-                    "event_start_date": row[1],
-                    "attendance_count": row[2],
-                }
-                for row in rows
-            ]
+                {"event_name": row[0],"event_start_date": row[1],
+                 "attendance_count": row[2],
+                }for row in rows]
         finally:
             cursor.close()
+
     #average turnout across all events
     @staticmethod
     def analytics_avg_attendance(club_id):
@@ -511,6 +479,7 @@ class ClubManager:
             return float(row[0]) if row and row[0] else 0.0
         finally:
             cursor.close()
+
     #events that filled more then half their capacity
     @staticmethod
     def analytics_quota_utilization(club_id):
@@ -563,15 +532,13 @@ class ClubManager:
                 GROUP BY YEAR(e.event_start_date), WEEK(e.event_start_date)
                 ORDER BY yr, wk
                 """,
-                (club_id,),
-            )
+                (club_id,),)
             rows = cursor.fetchall()
             return [
-                {"year": row[0], "week": row[1], "total_attendance": row[2]}
-                for row in rows
-            ]
+                {"year": row[0], "week": row[1], "total_attendance": row[2]}for row in rows]
         finally:
             cursor.close()
+
     #floowers that actually attended events
     @staticmethod
     def analytics_follower_conversion(club_id):
@@ -591,16 +558,12 @@ class ClubManager:
                 JOIN events e ON i.event_id = e.event_id
                 WHERE e.club_id = %s AND i.interaction_type = 'attended'
                 """,
-                (club_id, club_id, club_id),
-            )
+                (club_id, club_id, club_id),)
             row = cursor.fetchone()
             if not row:
                 return {"total_followers": 0, "unique_attendees": 0, "conversion_rate": 0.0}
-            return {
-                "total_followers": row[0] or 0,
-                "unique_attendees": row[1] or 0,
-                "conversion_rate": float(row[2]) if row[2] else 0.0,
-            }
+            return {"total_followers": row[0] or 0,
+                "unique_attendees": row[1] or 0, "conversion_rate": float(row[2]) if row[2] else 0.0,}
         finally:
             cursor.close()
     #find members that never attended any event
@@ -629,8 +592,7 @@ class ClubManager:
             rows = cursor.fetchall()
             return [
                 {"user_id": row[0], "name": row[1], "joined_at": row[2]}
-                for row in rows
-            ]
+                for row in rows]
         finally:
             cursor.close()
 
@@ -638,7 +600,6 @@ class ClubManager:
     # getting all budget transactions for the club
     @staticmethod
     def get_budget_transactions(club_id):
-        """Get all budget transactions for the club."""
         cursor = get_cursor()
         try:
             cursor.execute(
@@ -652,21 +613,16 @@ class ClubManager:
             )
             rows = cursor.fetchall()
             return [
-                {
-                    "transaction_id": row[0],
-                    "amount": float(row[1]),
-                    "transaction_date": row[2],
-                    "transaction_type": row[3],
+                {   "transaction_id": row[0],"amount": float(row[1]),
+                    "transaction_date": row[2],"transaction_type": row[3],
                     "description": row[4],
-                }
-                for row in rows
-            ]
+                }for row in rows]
         finally:
             cursor.close()
+
     #recording a new budget transaction for the club
     @staticmethod
     def add_budget_transaction(club_id, amount, transaction_type, description):
-        """Add a new budget transaction and update club balance."""
         cursor = get_cursor()
         db = get_db()
         try:
@@ -702,7 +658,6 @@ class ClubManager:
     #cartegorizing expenses in this month spending by description
     @staticmethod
     def get_monthly_expense_breakdown(club_id):
-        """Get monthly expense breakdown by description."""
         cursor = get_cursor()
         try:
             cursor.execute(
@@ -726,7 +681,6 @@ class ClubManager:
     # comparing income vs expense for the club
     @staticmethod
     def get_income_vs_expense(club_id):
-        """Get total income vs expense for the club."""
         cursor = get_cursor()
         try:
             cursor.execute(

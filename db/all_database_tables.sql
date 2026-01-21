@@ -1,17 +1,7 @@
--- =============================================
--- COMPREHENSIVE DATABASE SCHEMA
--- Creates all required tables and triggers for the club management system
--- Can be executed in a single run to obtain a complete database schema for fully working system.
--- =============================================
-
 CREATE DATABASE IF NOT EXISTS club_management;
 USE club_management;
 
--- =============================================
--- BASE TABLES (No dependencies)
--- =============================================
-
--- Users: Core user information
+-- Users: User information
 CREATE TABLE users (
   user_id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
@@ -21,18 +11,23 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Venues: Event locations with capacity
+-- User Credentials: Password hashes for authentication
+CREATE TABLE user_credentials (
+  email VARCHAR(255) PRIMARY KEY,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
+);
+
+-- Venues: Event locations
 CREATE TABLE venues (
   venue_id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL UNIQUE,
   capacity INT NOT NULL
 );
 
--- =============================================
--- CLUB-RELATED TABLES
--- =============================================
-
--- Clubs: Club information with admin assignment
+-- Clubs: Club information + club admin assignment
 CREATE TABLE clubs (
   club_id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL UNIQUE,
@@ -77,17 +72,7 @@ CREATE TABLE membership_requests (
   FOREIGN KEY (club_id) REFERENCES clubs(club_id)
 );
 
--- Club Followers: Users following clubs (legacy table)
-CREATE TABLE club_followers (
-  user_id INT NOT NULL,
-  club_id INT NOT NULL,
-  followed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (user_id, club_id),
-  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON DELETE CASCADE
-);
-
--- Follows: Users following clubs (alternative table)
+-- Follows: Users following clubs
 CREATE TABLE follows (
   user_id INT NOT NULL,
   club_id INT NOT NULL,
@@ -96,10 +81,6 @@ CREATE TABLE follows (
   FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
   FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON DELETE CASCADE
 );
-
--- =============================================
--- EVENT-RELATED TABLES
--- =============================================
 
 -- Events: Club events with full details
 CREATE TABLE events (
@@ -161,17 +142,6 @@ CREATE TABLE event_modifications (
   FOREIGN KEY (modified_by_user_id) REFERENCES users(user_id)
 );
 
--- =============================================
--- USER AUTHENTICATION
--- =============================================
 
--- User Credentials: Password hashes for authentication
-CREATE TABLE user_credentials (
-  email VARCHAR(255) PRIMARY KEY,
-  password_hash VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
-);
 
 
